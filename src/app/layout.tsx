@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/data";
 import { settingsToCssVars } from "@/lib/settings";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { AuthHashRedirect } from "@/components/auth-hash-redirect";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
@@ -30,6 +31,7 @@ export default async function RootLayout({
   return (
     <html lang="es" style={cssVars}>
       <body>
+        <AuthHashRedirect />
         <div className="flex min-h-dvh flex-col">
           <SiteHeader settings={settings} />
           <main className="flex-1 py-6 sm:py-10">{children}</main>
