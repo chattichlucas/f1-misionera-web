@@ -26,11 +26,22 @@ jobs:
             {
               echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL"
               echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY"
+              echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"
               echo "SUPABASE_DB_URL=$SUPABASE_DB_URL"
             } >> "$GITHUB_ENV"
             echo "Variables cargadas desde $ENV_FILE"
           else
             echo "::warning::$ENV_FILE no existe. Se hace build sin credenciales; el contenedor NO va a levantar hasta que lo crees."
+          fi
+
+      - name: Chequear credenciales de build
+        run: |
+          KEY="${NEXT_PUBLIC_SUPABASE_ANON_KEY:-$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}"
+          echo "URL  = $NEXT_PUBLIC_SUPABASE_URL"
+          echo "KEY  len=${#KEY} prefijo=${KEY:0:12}"
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$KEY" ]; then
+            echo "::error::Falta la URL o la key pública de Supabase en /home/ubuntu/liga-web/.env"
+            exit 1
           fi
 
       - name: Migrar base de datos (idempotente)
@@ -47,6 +58,7 @@ jobs:
           sudo docker build \
             --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
             --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
             -t liga-web:latest .
 
       - name: Levantar contenedor

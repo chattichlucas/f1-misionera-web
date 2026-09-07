@@ -1,4 +1,5 @@
 import { createClient as createSbClient } from "@supabase/supabase-js";
+import { SUPABASE_URL } from "./env";
 
 /**
  * Cliente con service_role. SOLO servidor. Ignora RLS.
@@ -7,7 +8,7 @@ import { createClient as createSbClient } from "@supabase/supabase-js";
 export function createAdminClient() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY");
-  return createSbClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
+  return createSbClient(SUPABASE_URL, key, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
