@@ -33,8 +33,8 @@ create table if not exists public.site_settings (
   color_line    text not null default '#202833',
   color_text    text not null default '#f5f7fa',
   color_muted   text not null default '#8d97a5',
-  color_primary text not null default '#ff6500',
-  color_primary_fg text not null default '#0a0500',
+  color_primary text not null default '#e10600',
+  color_primary_fg text not null default '#ffffff',
   color_accent  text not null default '#4a97ff',
   color_positive text not null default '#3bd671',
   color_negative text not null default '#ff3b46',
@@ -51,6 +51,11 @@ create table if not exists public.site_settings (
   updated_at    timestamptz not null default now()
 );
 insert into public.site_settings (id) values (1) on conflict do nothing;
+-- Paleta por defecto en rojo. Sólo actualiza si sigue en el naranja de fábrica,
+-- así no pisa un color elegido después desde /admin.
+update public.site_settings
+   set color_primary = '#e10600', color_primary_fg = '#ffffff'
+ where id = 1 and color_primary = '#ff6500';
 drop trigger if exists trg_site_settings_updated on public.site_settings;
 create trigger trg_site_settings_updated before update on public.site_settings
   for each row execute function public.set_updated_at();
