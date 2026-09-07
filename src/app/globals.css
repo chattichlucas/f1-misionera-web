@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #05070a;
+  --panel: #0c1118;
+  --panel-2: #0a0d11;
+  --line: #202833;
+  --text: #f5f7fa;
+  --muted: #8d97a5;
+  --primary: #ff6500;
+  --primary-fg: #0a0500;
+  --accent: #4a97ff;
+  --positive: #3bd671;
+  --negative: #ff3b46;
+  --font-sans: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: var(--font-sans);
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+a {
+  color: inherit;
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-shell px-4 sm:px-6;
+  }
+
+  .panel {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--line);
+    @apply rounded-panel shadow-panel;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: var(--primary-fg);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
+  }
+  .btn-ghost {
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  .btn-ghost:hover {
+    border-color: var(--primary);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+    border: 1px solid var(--line);
+  }
+
+  .data-table {
+    @apply w-full border-collapse text-sm;
+  }
+  .data-table th {
+    @apply px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-muted;
+    border-bottom: 1px solid var(--line);
+  }
+  .data-table td {
+    @apply px-3 py-2.5;
+    border-bottom: 1px solid var(--line);
+  }
+  .data-table tr:last-child td {
+    border-bottom: 0;
+  }
+  .data-table .num {
+    @apply text-right tabular-nums;
+  }
+}
+
+.rank-badge {
+  @apply inline-flex h-6 w-6 items-center justify-center rounded-md text-xs font-extrabold;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+}
+.rank-badge.r1 { background: #f5c518; color: #1a1400; border-color: #f5c518; }
+.rank-badge.r2 { background: #c8d0d8; color: #10151a; border-color: #c8d0d8; }
+.rank-badge.r3 { background: #d08b45; color: #180d00; border-color: #d08b45; }

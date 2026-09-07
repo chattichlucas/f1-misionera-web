@@ -1,0 +1,53 @@
+import type { SiteSettings } from "./types";
+
+export const DEFAULT_SETTINGS: SiteSettings = {
+  id: 1,
+  league_name: "Mi Liga",
+  tagline: "Liga de F1 · Temporada 2026",
+  season_label: "Temporada 2026",
+  logo_url: null,
+  hero_image_url: null,
+  color_bg: "#05070a",
+  color_panel: "#0c1118",
+  color_panel_2: "#0a0d11",
+  color_line: "#202833",
+  color_text: "#f5f7fa",
+  color_muted: "#8d97a5",
+  color_primary: "#ff6500",
+  color_primary_fg: "#0a0500",
+  color_accent: "#4a97ff",
+  color_positive: "#3bd671",
+  color_negative: "#ff3b46",
+  discord_url: null,
+  instagram_url: null,
+  youtube_url: null,
+  twitch_url: null,
+  tiktok_url: null,
+  contact_email: null,
+  points_scheme: {
+    race: [25, 18, 15, 12, 10, 8, 6, 4, 2, 1],
+    sprint: [8, 7, 6, 5, 4, 3, 2, 1],
+    fastest_lap: 1,
+    pole: 0,
+  },
+  inscriptions_open: true,
+  updated_at: new Date(0).toISOString(),
+};
+
+export function settingsToCssVars(s: SiteSettings): Record<string, string> {
+  return {
+    "--bg": s.color_bg,
+    "--panel": s.color_panel,
+    "--panel-2": s.color_panel_2,
+    "--line": s.color_line,
+    "--text": s.color_text,
+    "--muted": s.color_muted,
+    "--primary": s.color_primary,
+    "--primary-fg": s.color_primary_fg,
+    "--accent": s.color_accent,
+    "--positive": s.color_positive,
+    "--negative": s.color_negative,
+    "--font-sans": "Inter, 'Segoe UI', Roboto, Arial, sans-serif",
+    "--font-display": "Inter, 'Segoe UI', Roboto, Arial, sans-serif",
+  };
+}
