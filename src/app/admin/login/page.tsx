@@ -20,7 +20,12 @@ function LoginForm() {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setError("Email o contraseña incorrectos.");
+        const map: Record<string, string> = {
+          "Invalid login credentials": "Email o contraseña incorrectos.",
+          "Email not confirmed":
+            "El usuario no está confirmado. En Supabase → Authentication → Users marcá 'Confirm email' (o recrealo con 'Auto Confirm').",
+        };
+        setError(map[error.message] ?? `${error.message} (código ${error.status ?? "?"})`);
         setLoading(false);
         return;
       }
