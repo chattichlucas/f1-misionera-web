@@ -1,0 +1,54 @@
+name: Deploy Liga Web
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Cargar variables del servidor
+        run: |
+          set -a
+          source /home/ubuntu/liga-web/.env
+          set +a
+          echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY" >> "$GITHUB_ENV"
+          echo "SUPABASE_DB_URL=$SUPABASE_DB_URL" >> "$GITHUB_ENV"
+
+      - name: Migrar base de datos (idempotente)
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            sudo docker run --rm -v "$PWD/supabase:/sql" postgres:16 \
+              psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f /sql/migrations/0001_init.sql
+          else
+            echo "SUPABASE_DB_URL no seteado en el .env del servidor; salto la migración."
+          fi
+
+      - name: Build imagen
+        run: |
+          sudo docker build \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -t liga-web:latest .
+
+      - name: Levantar contenedor
+        run: |
+          sudo docker compose down
+          sudo docker compose up -d
+
+      - name: Limpiar imágenes viejas
+        if: always()
+        run: sudo docker image prune -f
+
+      - name: Verificar
+        run: sudo docker compose ps --format table

@@ -1,0 +1,8 @@
+services:
+  liga-web:
+    image: liga-web:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - /home/ubuntu/liga-web/.env
+    restart: unless-stopped

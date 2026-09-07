@@ -15,22 +15,22 @@ Sitio oficial para una liga de F1 (F1 25, temporada 2026) con:
 | Framework | Next.js 15 (App Router) + React 19 + TypeScript |
 | Estilos | Tailwind CSS 3 (colores por variables CSS que salen de la base) |
 | Base de datos + Auth | Supabase (Postgres + Auth) |
-| Hosting | Vercel |
+| Hosting | Docker en tu servidor (imagen `liga-web:latest`) |
+| CI/CD | GitHub Actions con runner **self-hosted** (misma metodología que IA-Racing) |
 
 El sitio **compila y renderiza sin Supabase** (muestra estados vacíos), así el primer
 deploy funciona antes de cargar credenciales.
 
 ## Puesta en marcha — ver `DEPLOY.md`
 
-Resumen:
+Al hacer `push` a `main`, el runner self-hosted:
 
-1. Crear proyecto en [Supabase](https://supabase.com) y correr `supabase/migrations/0001_init.sql`
-   en el SQL Editor. Opcional: `supabase/seed.sql`.
-2. Crear el usuario admin en Supabase → Authentication → Users → *Add user*.
-3. Importar el repo en [Vercel](https://vercel.com), setear las variables de entorno
-   (ver `.env.example`) y desplegar.
-4. Entrar a `https://TU-DOMINIO/admin`, cargar los datos de la liga y personalizar en
-   **Ajustes del sitio**.
+1. corre la migración SQL contra Supabase (si `SUPABASE_DB_URL` está en el `.env` del server),
+2. `docker build -t liga-web:latest .`,
+3. `docker compose down && up -d` → contenedor en el puerto `3000`.
+
+Config del servidor: `/home/ubuntu/liga-web/.env` (ver `.env.example`) + runner
+self-hosted con `docker`. Detalle completo en `DEPLOY.md`.
 
 ## Desarrollo local (requiere Node 18+)
 

@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Build compacto para Docker (genera .next/standalone/server.js).
+  output: "standalone",
   eslint: {
     // ESLint no está instalado; Vercel no debe frenar el build por lint.
     ignoreDuringBuilds: true,
