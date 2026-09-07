@@ -71,6 +71,9 @@ function LoginForm() {
       <button type="submit" className="btn btn-primary w-full" disabled={loading}>
         {loading ? "Ingresando…" : "Ingresar"}
       </button>
+      <a href="/admin/password" className="block text-xs text-muted hover:text-text">
+        ¿Olvidaste tu contraseña?
+      </a>
       <p className="text-xs text-muted">
         Las cuentas de administrador se crean desde el panel de Supabase
         (Authentication → Users).

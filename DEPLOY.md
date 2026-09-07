@@ -18,10 +18,15 @@ push a main ─► GitHub Actions (runner self-hosted en tu server)
 1. Crear proyecto en https://supabase.com/dashboard.
 2. **SQL Editor** → pegar `supabase/migrations/0001_init.sql` → **Run**.
    (Opcional: `supabase/seed.sql` para datos de ejemplo — **no** lo corras más de una vez.)
-3. **Authentication → Users → Add user** (con *Auto Confirm*): ese email/clave entra a `/admin`.
-4. **Project Settings → API** → anotar `Project URL`, `anon public`, `service_role`.
-5. **Project Settings → Database → Connection string → URI** → anotar la cadena
-   (agregale `?sslmode=require` al final si no lo trae).
+3. **Authentication → Users → Add user → Create new user** (con *Auto Confirm*):
+   ese email/clave entra a `/admin`. (No uses "Send invitation".)
+4. **Authentication → URL Configuration**:
+   - **Site URL:** `http://TU_IP:3000` (o tu dominio)
+   - **Redirect URLs:** agregá `http://TU_IP:3000/**`
+   Necesario para que el link de "recuperar contraseña" (`/admin/password`) funcione.
+5. **Project Settings → API Keys** → anotar `Project URL`, `Publishable key`, `Secret key`.
+6. **Project Settings → Database → Connection string → URI** (Session pooler si tu server
+   es IPv4) → anotar la cadena.
 
 ## 2. Servidor — archivo `.env`
 
