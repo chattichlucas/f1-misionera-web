@@ -293,6 +293,7 @@ end $$;
 drop policy if exists "public insert" on public.inscriptions;
 drop policy if exists "admin read"    on public.inscriptions;
 drop policy if exists "admin manage"  on public.inscriptions;
+drop policy if exists "admin delete"  on public.inscriptions;
 create policy "public insert" on public.inscriptions
   for insert with check (status = 'pendiente');
 create policy "admin read" on public.inscriptions
