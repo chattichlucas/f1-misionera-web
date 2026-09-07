@@ -46,6 +46,7 @@ jobs:
           fi
 
       - name: Migrar base de datos (idempotente)
+        continue-on-error: true
         run: |
           if [ -z "$SUPABASE_DB_URL" ]; then
             echo "SUPABASE_DB_URL no seteado en el .env del servidor; salto la migración."
