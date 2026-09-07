@@ -38,6 +38,7 @@ export default async function AdminLayout({
     { href: "/admin/inscripciones", label: "Inscripciones" },
     ...RESOURCE_LIST.map((r) => ({ href: `/admin/manage/${r.key}`, label: r.label })),
     { href: "/admin/ajustes", label: "Ajustes del sitio" },
+    { href: "/admin/cuenta", label: "Mi cuenta" },
   ];
 
   return (
