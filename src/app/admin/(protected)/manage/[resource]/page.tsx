@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { RESOURCES } from "@/lib/admin/resources";
 import { ResourceManager } from "@/components/admin/resource-manager";
+import { getMyPermissions, canView, canEdit } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,17 @@ export default async function AdminResourcePage({
   const { resource: key } = await params;
   const resource = RESOURCES[key];
   if (!resource) notFound();
+
+  const mp = await getMyPermissions();
+  if (!canView(mp, key)) {
+    return (
+      <div className="panel p-6">
+        <h1 className="text-lg font-extrabold">{resource.label}</h1>
+        <p className="mt-2 text-sm text-muted">No tenés acceso a este módulo.</p>
+      </div>
+    );
+  }
+  const readOnly = !canEdit(mp, key);
 
   const sb = await createClient();
 
@@ -45,6 +57,7 @@ export default async function AdminResourcePage({
       resource={resource}
       rows={(rows ?? []) as Record<string, unknown>[]}
       refOptions={refOptions}
+      readOnly={readOnly}
     />
   );
 }

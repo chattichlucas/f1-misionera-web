@@ -8,7 +8,13 @@ import { formatDateTime } from "@/lib/format";
 
 const STATUSES = ["pendiente", "aceptada", "reserva", "rechazada"] as const;
 
-export function InscriptionRow({ row }: { row: Inscription }) {
+export function InscriptionRow({
+  row,
+  editable = true,
+}: {
+  row: Inscription;
+  editable?: boolean;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -57,6 +63,7 @@ export function InscriptionRow({ row }: { row: Inscription }) {
         <span className="chip uppercase">{row.status}</span>
       </div>
 
+      {!editable ? null : (
       <div className="mt-3 flex flex-wrap gap-2">
         {STATUSES.map((s) => (
           <button
@@ -77,6 +84,7 @@ export function InscriptionRow({ row }: { row: Inscription }) {
           eliminar
         </button>
       </div>
+      )}
     </div>
   );
 }

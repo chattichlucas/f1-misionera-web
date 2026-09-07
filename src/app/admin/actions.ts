@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { RESOURCES } from "@/lib/admin/resources";
+import { getMyPermissions, canEdit, canView, type Level } from "@/lib/permissions";
 
 async function requireAdmin() {
   const sb = await createClient();
@@ -10,6 +11,15 @@ async function requireAdmin() {
     data: { user },
   } = await sb.auth.getUser();
   if (!user) throw new Error("No autorizado");
+  return sb;
+}
+
+/** Verifica que el usuario tenga al menos `level` en `moduleKey`. */
+async function requirePerm(moduleKey: string, level: Level) {
+  const sb = await requireAdmin();
+  const mp = await getMyPermissions();
+  const ok = level === "edit" ? canEdit(mp, moduleKey) : canView(mp, moduleKey);
+  if (!ok) throw new Error(`Sin permiso de ${level} en "${moduleKey}"`);
   return sb;
 }
 
@@ -34,11 +44,11 @@ export async function saveResource(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    const sb = await requireAdmin();
     const resourceKey = String(formData.get("__resource"));
     const id = String(formData.get("__id") || "");
     const resource = RESOURCES[resourceKey];
     if (!resource) return { error: "Recurso desconocido" };
+    const sb = await requirePerm(resourceKey, "edit");
 
     const row: Record<string, unknown> = {};
     for (const f of resource.fields) {
@@ -69,11 +79,11 @@ export async function deleteResource(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    const sb = await requireAdmin();
     const resourceKey = String(formData.get("__resource"));
     const id = String(formData.get("__id") || "");
     const resource = RESOURCES[resourceKey];
     if (!resource || !id) return { error: "Datos inválidos" };
+    const sb = await requirePerm(resourceKey, "edit");
     const { error } = await sb.from(resource.table).delete().eq("id", id);
     if (error) return { error: error.message };
     revalidatePath("/", "layout");
@@ -88,7 +98,7 @@ export async function saveSettings(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    const sb = await requireAdmin();
+    const sb = await requirePerm("settings", "edit");
     const keys = [
       "league_name", "tagline", "season_label", "logo_url", "hero_image_url",
       "color_bg", "color_panel", "color_panel_2", "color_line", "color_text",
@@ -130,7 +140,7 @@ export async function setInscriptionStatus(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    const sb = await requireAdmin();
+    const sb = await requirePerm("inscriptions", "edit");
     const id = String(formData.get("id"));
     const status = String(formData.get("status"));
     const { error } = await sb.from("inscriptions").update({ status }).eq("id", id);
@@ -147,7 +157,7 @@ export async function deleteInscription(
   formData: FormData,
 ): Promise<ActionResult> {
   try {
-    const sb = await requireAdmin();
+    const sb = await requirePerm("inscriptions", "edit");
     const id = String(formData.get("id"));
     const { error } = await sb.from("inscriptions").delete().eq("id", id);
     if (error) return { error: error.message };

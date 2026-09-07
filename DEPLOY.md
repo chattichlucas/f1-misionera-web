@@ -16,7 +16,9 @@ push a main ─► GitHub Actions (runner self-hosted en tu server)
 ## 1. Supabase (una sola vez)
 
 1. Crear proyecto en https://supabase.com/dashboard.
-2. **SQL Editor** → pegar `supabase/migrations/0001_init.sql` → **Run**.
+2. **SQL Editor** → correr **en orden** cada archivo de `supabase/migrations/`
+   (`0001_init.sql`, `0002_permissions.sql`, …). Son idempotentes. Si configurás
+   `SUPABASE_DB_URL`, el workflow los corre solo en cada deploy.
    (Opcional: `supabase/seed.sql` para datos de ejemplo — **no** lo corras más de una vez.)
 3. **Authentication → Users → Add user → Create new user** (con *Auto Confirm*):
    ese email/clave entra a `/admin`. (No uses "Send invitation".)
@@ -37,14 +39,29 @@ Si tu usuario no es `ubuntu`, ajustá la ruta en `docker-compose.yml` y en
 ```env
 # se inyectan en el build (NEXT_PUBLIC_*) y también en runtime
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...     # o la anon key legacy (eyJ...)
 
 # sólo runtime (servidor)
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_...              # o la service_role legacy
 
-# opcional: si está, el workflow corre la migración en cada deploy
-SUPABASE_DB_URL=postgresql://postgres:PASSWORD@db.xxxxxxxx.supabase.co:5432/postgres?sslmode=require
+# emails con acceso total y gestión de permisos (separados por coma).
+# vacío = cualquier usuario logueado tiene acceso total (modo compat).
+SUPERADMIN_EMAILS=vos@gmail.com
+
+# opcional: si está, el workflow corre TODAS las migraciones en cada deploy
+# (Session pooler si tu server es IPv4)
+SUPABASE_DB_URL=postgresql://postgres.xxxx:PASSWORD@aws-0-region.pooler.supabase.com:5432/postgres
 ```
+
+### Permisos por usuario
+
+- Superadmin = email en `SUPERADMIN_EMAILS`. Acceso total + pantalla **Usuarios y
+  permisos** para repartir accesos.
+- A cada otro usuario le asignás por módulo: **sin acceso / ver / editar**.
+- Se aplica en el panel, en las server actions y en RLS (Postgres).
+- El primer superadmin tiene que **entrar una vez** para que el sistema de permisos
+  se active (queda registrado en la tabla `superadmins`). Antes de eso, o con
+  `SUPERADMIN_EMAILS` vacío, cualquier logueado edita todo.
 
 ## 3. Runner self-hosted (una sola vez)
 

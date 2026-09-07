@@ -28,6 +28,7 @@ jobs:
               echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY"
               echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"
               echo "SUPABASE_DB_URL=$SUPABASE_DB_URL"
+              echo "SUPERADMIN_EMAILS=$SUPERADMIN_EMAILS"
             } >> "$GITHUB_ENV"
             echo "Variables cargadas desde $ENV_FILE"
           else
@@ -46,11 +47,27 @@ jobs:
 
       - name: Migrar base de datos (idempotente)
         run: |
-          if [ -n "$SUPABASE_DB_URL" ]; then
-            sudo docker run --rm -v "$PWD/supabase:/sql" postgres:16 \
-              psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f /sql/migrations/0001_init.sql
-          else
+          if [ -z "$SUPABASE_DB_URL" ]; then
             echo "SUPABASE_DB_URL no seteado en el .env del servidor; salto la migración."
+            exit 0
+          fi
+          run_psql() {
+            sudo docker run --rm -i -v "$PWD/supabase:/sql" postgres:16 \
+              psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 "$@"
+          }
+          for f in supabase/migrations/*.sql; do
+            echo "── aplicando ${f}"
+            run_psql -f "/sql/migrations/$(basename "$f")"
+          done
+          # Sembrar superadmins desde el .env (lista separada por comas)
+          if [ -n "$SUPERADMIN_EMAILS" ]; then
+            IFS=',' read -ra _EM <<< "$SUPERADMIN_EMAILS"
+            for e in "${_EM[@]}"; do
+              e="$(echo "$e" | tr -d '[:space:]')"
+              [ -z "$e" ] && continue
+              echo "── superadmin: $e"
+              run_psql -c "insert into public.superadmins(email) values (lower('$e')) on conflict do nothing;"
+            done
           fi
 
       - name: Build imagen

@@ -98,10 +98,12 @@ export function ResourceManager({
   resource,
   rows,
   refOptions,
+  readOnly = false,
 }: {
   resource: Resource;
   rows: Row[];
   refOptions: RefOptions;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState<Row | null>(null);
@@ -147,9 +149,11 @@ export function ResourceManager({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold">{resource.label}</h1>
-          <p className="text-sm text-muted">{rows.length} registros</p>
+          <p className="text-sm text-muted">
+            {rows.length} registros{readOnly && " · solo lectura"}
+          </p>
         </div>
-        {!editing && (
+        {!editing && !readOnly && (
           <button className="btn btn-primary" onClick={() => setEditing({})}>
             + Nuevo
           </button>
@@ -214,15 +218,21 @@ export function ResourceManager({
                   <td key={c}>{display(fieldByName.get(c) ?? { name: c, label: c, type: "text" }, row[c], refOptions)}</td>
                 ))}
                 <td className="num whitespace-nowrap">
-                  <button className="text-sm font-semibold text-primary" onClick={() => setEditing(row)}>
-                    Editar
-                  </button>
-                  <button
-                    className="ml-3 text-sm font-semibold text-muted hover:text-negative"
-                    onClick={() => onDelete(String(row.id))}
-                  >
-                    Borrar
-                  </button>
+                  {readOnly ? (
+                    <span className="text-sm text-muted">—</span>
+                  ) : (
+                    <>
+                      <button className="text-sm font-semibold text-primary" onClick={() => setEditing(row)}>
+                        Editar
+                      </button>
+                      <button
+                        className="ml-3 text-sm font-semibold text-muted hover:text-negative"
+                        onClick={() => onDelete(String(row.id))}
+                      >
+                        Borrar
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

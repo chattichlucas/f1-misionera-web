@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { RESOURCE_LIST } from "@/lib/admin/resources";
+import { getMyPermissions, canView } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -11,16 +12,24 @@ async function count(table: string) {
 }
 
 export default async function AdminHome() {
+  const mp = await getMyPermissions();
+  const visible = RESOURCE_LIST.filter((r) => canView(mp, r.key));
+  const showInscriptions = canView(mp, "inscriptions");
+
   const sb = await createClient();
-  const { data: pending } = await sb
-    .from("inscriptions")
-    .select("id, full_name, gamertag, category_label, created_at")
-    .eq("status", "pendiente")
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const pending = showInscriptions
+    ? (
+        await sb
+          .from("inscriptions")
+          .select("id, full_name, gamertag, category_label, created_at")
+          .eq("status", "pendiente")
+          .order("created_at", { ascending: false })
+          .limit(10)
+      ).data
+    : null;
 
   const counts = await Promise.all(
-    RESOURCE_LIST.map(async (r) => [r, await count(r.table)] as const),
+    visible.map(async (r) => [r, await count(r.table)] as const),
   );
 
   return (
@@ -36,27 +45,29 @@ export default async function AdminHome() {
         ))}
       </div>
 
-      <div className="panel">
-        <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: "var(--line)" }}>
-          <h2 className="font-bold">Inscripciones pendientes</h2>
-          <Link href="/admin/inscripciones" className="text-sm font-bold text-primary">
-            Ver todas →
-          </Link>
+      {showInscriptions && (
+        <div className="panel">
+          <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: "var(--line)" }}>
+            <h2 className="font-bold">Inscripciones pendientes</h2>
+            <Link href="/admin/inscripciones" className="text-sm font-bold text-primary">
+              Ver todas →
+            </Link>
+          </div>
+          {!pending || pending.length === 0 ? (
+            <p className="px-5 py-8 text-center text-sm text-muted">No hay inscripciones pendientes.</p>
+          ) : (
+            <ul className="divide-y" style={{ borderColor: "var(--line)" }}>
+              {pending.map((p) => (
+                <li key={p.id} className="px-5 py-3 text-sm">
+                  <span className="font-semibold">{p.full_name}</span>{" "}
+                  <span className="text-muted">· {p.gamertag}</span>{" "}
+                  {p.category_label && <span className="text-muted">· {p.category_label}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        {!pending || pending.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-muted">No hay inscripciones pendientes.</p>
-        ) : (
-          <ul className="divide-y" style={{ borderColor: "var(--line)" }}>
-            {pending.map((p) => (
-              <li key={p.id} className="px-5 py-3 text-sm">
-                <span className="font-semibold">{p.full_name}</span>{" "}
-                <span className="text-muted">· {p.gamertag}</span>{" "}
-                {p.category_label && <span className="text-muted">· {p.category_label}</span>}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      )}
     </div>
   );
 }

@@ -1,11 +1,31 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, hasSupabaseEnv } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { RESOURCE_LIST } from "@/lib/admin/resources";
+import {
+  getMyPermissions,
+  canView,
+  canSeeAnything,
+  SUPERADMIN_EMAILS,
+} from "@/lib/permissions";
 import { signOut } from "../auth-actions";
 
 export const metadata = { title: "Panel" };
 export const dynamic = "force-dynamic";
+
+/** Si el email está en SUPERADMIN_EMAILS, lo aseguramos en la tabla (self-heal). */
+async function ensureSuperadmin(email: string | null | undefined) {
+  if (!email || !SUPERADMIN_EMAILS.includes(email.toLowerCase())) return;
+  try {
+    const admin = createAdminClient();
+    await admin
+      .from("superadmins")
+      .upsert({ email: email.toLowerCase() }, { onConflict: "email" });
+  } catch {
+    // sin service_role key: no pasa nada, el modo compat cubre
+  }
+}
 
 export default async function AdminLayout({
   children,
@@ -19,8 +39,8 @@ export default async function AdminLayout({
           <h1 className="text-lg font-extrabold">Falta configurar Supabase</h1>
           <p className="mt-2 text-sm text-muted">
             Definí <code>NEXT_PUBLIC_SUPABASE_URL</code> y{" "}
-            <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> en las variables de entorno de
-            Vercel y volvé a desplegar.
+            <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> en el <code>.env</code> del servidor
+            y volvé a desplegar.
           </p>
         </div>
       </div>
@@ -33,19 +53,28 @@ export default async function AdminLayout({
   } = await sb.auth.getUser();
   if (!user) redirect("/admin/login");
 
-  const nav = [
-    { href: "/admin", label: "Resumen" },
-    { href: "/admin/inscripciones", label: "Inscripciones" },
-    ...RESOURCE_LIST.map((r) => ({ href: `/admin/manage/${r.key}`, label: r.label })),
-    { href: "/admin/ajustes", label: "Ajustes del sitio" },
-    { href: "/admin/cuenta", label: "Mi cuenta" },
-  ];
+  await ensureSuperadmin(user.email);
+  const mp = await getMyPermissions();
+
+  const nav: { href: string; label: string }[] = [{ href: "/admin", label: "Resumen" }];
+  if (canView(mp, "inscriptions"))
+    nav.push({ href: "/admin/inscripciones", label: "Inscripciones" });
+  for (const r of RESOURCE_LIST) {
+    if (canView(mp, r.key)) nav.push({ href: `/admin/manage/${r.key}`, label: r.label });
+  }
+  if (canView(mp, "settings"))
+    nav.push({ href: "/admin/ajustes", label: "Ajustes del sitio" });
+  if (mp.superadmin) nav.push({ href: "/admin/usuarios", label: "Usuarios y permisos" });
+  nav.push({ href: "/admin/cuenta", label: "Mi cuenta" });
 
   return (
     <div className="shell grid gap-6 py-6 lg:grid-cols-[220px_1fr]">
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <div className="panel p-3">
-          <p className="px-2 py-1 text-xs text-muted">{user.email}</p>
+          <p className="px-2 py-1 text-xs text-muted">
+            {user.email}
+            {mp.superadmin && <span className="ml-1 text-primary">· superadmin</span>}
+          </p>
           <nav className="mt-1 flex flex-col">
             {nav.map((n) => (
               <Link
@@ -67,7 +96,19 @@ export default async function AdminLayout({
           </Link>
         </div>
       </aside>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0">
+        {canSeeAnything(mp) ? (
+          children
+        ) : (
+          <div className="panel p-6">
+            <h1 className="text-lg font-extrabold">Sin permisos asignados</h1>
+            <p className="mt-2 text-sm text-muted">
+              Tu cuenta no tiene acceso a ningún módulo todavía. Pedile a un superadmin
+              que te asigne permisos en <b>Usuarios y permisos</b>.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

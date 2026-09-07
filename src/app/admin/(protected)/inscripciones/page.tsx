@@ -1,10 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
+import { getMyPermissions, canView, canEdit } from "@/lib/permissions";
 import { InscriptionRow } from "./row";
 import type { Inscription } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminInscripcionesPage() {
+  const mp = await getMyPermissions();
+  if (!canView(mp, "inscriptions")) {
+    return (
+      <div className="panel p-6">
+        <h1 className="text-lg font-extrabold">Inscripciones</h1>
+        <p className="mt-2 text-sm text-muted">No tenés acceso a este módulo.</p>
+      </div>
+    );
+  }
+  const editable = canEdit(mp, "inscriptions");
+
   const sb = await createClient();
   const { data } = await sb
     .from("inscriptions")
@@ -16,14 +28,16 @@ export default async function AdminInscripcionesPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-extrabold">Inscripciones</h1>
-      <p className="text-sm text-muted">{rows.length} solicitudes</p>
+      <p className="text-sm text-muted">
+        {rows.length} solicitudes{!editable && " · solo lectura"}
+      </p>
 
       <div className="space-y-3">
         {rows.length === 0 && (
           <p className="panel p-6 text-sm text-muted">No hay inscripciones.</p>
         )}
         {rows.map((r) => (
-          <InscriptionRow key={r.id} row={r} />
+          <InscriptionRow key={r.id} row={r} editable={editable} />
         ))}
       </div>
     </div>
