@@ -18,12 +18,20 @@ jobs:
 
       - name: Cargar variables del servidor
         run: |
-          set -a
-          source /home/ubuntu/liga-web/.env
-          set +a
-          echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY" >> "$GITHUB_ENV"
-          echo "SUPABASE_DB_URL=$SUPABASE_DB_URL" >> "$GITHUB_ENV"
+          ENV_FILE=/home/ubuntu/liga-web/.env
+          if [ -f "$ENV_FILE" ]; then
+            set -a
+            . "$ENV_FILE"
+            set +a
+            {
+              echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL"
+              echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY"
+              echo "SUPABASE_DB_URL=$SUPABASE_DB_URL"
+            } >> "$GITHUB_ENV"
+            echo "Variables cargadas desde $ENV_FILE"
+          else
+            echo "::warning::$ENV_FILE no existe. Se hace build sin credenciales; el contenedor NO va a levantar hasta que lo crees."
+          fi
 
       - name: Migrar base de datos (idempotente)
         run: |
