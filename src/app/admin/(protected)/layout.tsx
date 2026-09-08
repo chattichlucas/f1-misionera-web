@@ -66,6 +66,8 @@ export default async function AdminLayout({
   }
   if (canEdit(mp, "session_results") && settings.recalc_enabled)
     nav.push({ href: "/admin/recalcular", label: "Recalcular carrera" });
+  if (canView(mp, "session_results"))
+    nav.push({ href: "/admin/importaciones", label: "Importaciones" });
   if (canView(mp, "settings"))
     nav.push({ href: "/admin/ajustes", label: "Ajustes del sitio" });
   if (mp.superadmin) nav.push({ href: "/admin/usuarios", label: "Usuarios y permisos" });

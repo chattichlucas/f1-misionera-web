@@ -23,8 +23,15 @@ type Payload = {
   category?: string; // slug
   session?: "race" | "sprint" | "qualifying";
   finalize?: boolean;
+  force?: boolean; // re-importar una fecha ya finalizada
   results: ResultIn[];
 };
+
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0].trim();
+  return req.headers.get("x-real-ip") ?? "?";
+}
 
 function authorized(req: NextRequest): boolean {
   const token = process.env.IMPORT_TOKEN;
@@ -64,11 +71,44 @@ export async function POST(req: NextRequest) {
   }
 
   const session = body.session ?? "race";
+  const forced = Boolean(body.force);
+  const ip = clientIp(req);
   const sb = createAdminClient();
+
+  async function log(fields: {
+    round_id: string | null;
+    round_label: string | null;
+    ok: boolean;
+    message: string;
+    imported?: number;
+    matched?: string[];
+    unmatched?: string[];
+  }) {
+    try {
+      await sb.from("import_logs").insert({
+        round_id: fields.round_id,
+        round_label: fields.round_label,
+        session,
+        ok: fields.ok,
+        message: fields.message,
+        imported: fields.imported ?? 0,
+        matched: fields.matched ?? [],
+        unmatched: fields.unmatched ?? [],
+        source_ip: ip,
+        forced,
+      });
+    } catch {
+      /* el log no debe romper el import */
+    }
+  }
 
   // --- resolver la fecha ---
   let roundId = body.round_id ?? null;
   let categoryId: string | null = null;
+  let roundStatus: string | null = null;
+  let roundLabel: string | null = null;
+
+  const roundSelect = "id, category_id, round_number, status, circuit:circuits(name)";
 
   if (!roundId) {
     if (body.round == null || !body.category) {
@@ -86,20 +126,37 @@ export async function POST(req: NextRequest) {
     categoryId = cat.id;
     const { data: rnd } = await sb
       .from("rounds")
-      .select("id, category_id")
+      .select(roundSelect)
       .eq("category_id", cat.id)
       .eq("round_number", body.round)
       .maybeSingle();
     if (!rnd) return NextResponse.json({ error: "Fecha no encontrada" }, { status: 404 });
     roundId = rnd.id;
+    roundStatus = (rnd as { status?: string }).status ?? null;
+    roundLabel = `R${(rnd as { round_number?: number }).round_number} ${(rnd as { circuit?: { name?: string } }).circuit?.name ?? ""}`.trim();
   } else {
     const { data: rnd } = await sb
       .from("rounds")
-      .select("id, category_id")
+      .select(roundSelect)
       .eq("id", roundId)
       .maybeSingle();
     if (!rnd) return NextResponse.json({ error: "Fecha no encontrada" }, { status: 404 });
-    categoryId = rnd.category_id;
+    categoryId = (rnd as { category_id: string }).category_id;
+    roundStatus = (rnd as { status?: string }).status ?? null;
+    roundLabel = `R${(rnd as { round_number?: number }).round_number} ${(rnd as { circuit?: { name?: string } }).circuit?.name ?? ""}`.trim();
+  }
+
+  if (roundStatus === "finalizado" && !forced) {
+    await log({
+      round_id: roundId,
+      round_label: roundLabel,
+      ok: false,
+      message: "Rechazado: la fecha ya está finalizada (mandá force:true para pisar).",
+    });
+    return NextResponse.json(
+      { error: "La fecha ya está finalizada. Mandá \"force\": true para re-importar." },
+      { status: 409 },
+    );
   }
 
   // --- pilotos de la categoría ---
@@ -156,12 +213,34 @@ export async function POST(req: NextRequest) {
     const { error } = await sb
       .from("session_results")
       .upsert(rows, { onConflict: "round_id,driver_id,session_type" });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      await log({
+        round_id: roundId,
+        round_label: roundLabel,
+        ok: false,
+        message: `Error al guardar: ${error.message}`,
+        matched,
+        unmatched,
+      });
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
   }
 
   if ((body.finalize ?? session === "race") && roundId) {
     await sb.from("rounds").update({ status: "finalizado" }).eq("id", roundId);
   }
+
+  await log({
+    round_id: roundId,
+    round_label: roundLabel,
+    ok: true,
+    message: unmatched.length
+      ? `Importado con ${unmatched.length} piloto(s) sin coincidencia`
+      : "Importado OK",
+    imported: rows.length,
+    matched,
+    unmatched,
+  });
 
   return NextResponse.json({
     ok: true,
