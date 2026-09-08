@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { RESOURCES } from "@/lib/admin/resources";
 import { getMyPermissions, canEdit, canView, type Level } from "@/lib/permissions";
-import { parseDuration } from "@/lib/format";
+import { parseDuration, argLocalToISO } from "@/lib/format";
 import { logAudit } from "@/lib/audit";
 
 /** Etiqueta legible de una fila (name / title / headline / round_number…). */
@@ -42,7 +42,7 @@ function coerce(value: FormDataEntryValue | null, type: string) {
     case "number":
       return s === "" ? null : Number(s);
     case "datetime":
-      return s === "" ? null : new Date(s).toISOString();
+      return s === "" ? null : argLocalToISO(s);
     case "duration":
       return s === "" ? null : parseDuration(s);
     default:

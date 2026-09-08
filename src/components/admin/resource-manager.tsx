@@ -6,7 +6,7 @@ import { saveResource, deleteResource } from "@/app/admin/actions";
 import type { Field, Resource } from "@/lib/admin/resources";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { ColorInput } from "@/components/admin/color-input";
-import { formatDuration } from "@/lib/format";
+import { formatDuration, formatDateTime, argDatetimeLocalValue } from "@/lib/format";
 
 type Row = Record<string, unknown>;
 type RefOptions = Record<string, { id: string; label: string }[]>;
@@ -16,11 +16,7 @@ const inputCls =
 const inputStyle = { borderColor: "var(--line)" } as const;
 
 function toDatetimeLocal(value: unknown): string {
-  if (!value || typeof value !== "string") return "";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return typeof value === "string" ? argDatetimeLocalValue(value) : "";
 }
 
 function FieldInput({
@@ -105,7 +101,7 @@ function display(field: Field, value: unknown, refOptions: RefOptions): string {
   if (field.type === "reference") {
     return refOptions[field.name]?.find((o) => o.id === value)?.label ?? String(value);
   }
-  if (field.type === "datetime") return new Date(String(value)).toLocaleString("es-AR");
+  if (field.type === "datetime") return `${formatDateTime(String(value))} ARG`;
   if (field.type === "duration") return formatDuration(Number(value));
   return String(value);
 }

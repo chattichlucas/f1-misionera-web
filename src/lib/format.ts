@@ -44,6 +44,25 @@ export function flagEmoji(code: string | null | undefined): string {
   );
 }
 
+// Argentina no usa horario de verano desde 2009 → offset fijo -03:00.
+const ARG_OFFSET_MS = 3 * 3600 * 1000;
+
+/** instante ISO → "YYYY-MM-DDTHH:mm" en hora de Argentina (para <input datetime-local>). */
+export function argDatetimeLocalValue(value: string | null | undefined): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Date(d.getTime() - ARG_OFFSET_MS).toISOString().slice(0, 16);
+}
+
+/** "YYYY-MM-DDTHH:mm" (hora de Argentina) → instante ISO UTC. */
+export function argLocalToISO(s: string | null | undefined): string | null {
+  if (!s) return null;
+  const withSec = s.length === 16 ? `${s}:00` : s;
+  const d = new Date(`${withSec}-03:00`);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 export function ordinal(n: number | null | undefined): string {
   if (n == null) return "–";
   return `${n}º`;
