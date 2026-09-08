@@ -17,7 +17,10 @@ export default async function AdminResourcePage({
   if (!base) notFound();
 
   const [mp, settings] = await Promise.all([getMyPermissions(), getSettings()]);
-  const features: Record<string, boolean> = { recalc: settings.recalc_enabled };
+  const features: Record<string, boolean> = {
+    recalc: settings.recalc_enabled,
+    pole_fl: settings.pole_fl_enabled,
+  };
   const resource = {
     ...base,
     fields: base.fields.filter((f) => !f.feature || features[f.feature]),

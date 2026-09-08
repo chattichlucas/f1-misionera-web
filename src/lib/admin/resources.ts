@@ -25,7 +25,7 @@ export type Field = {
   maxWidth?: number;
   maxKB?: number;
   /** el campo solo se muestra si esta función está habilitada en Ajustes */
-  feature?: "recalc";
+  feature?: "recalc" | "pole_fl";
 };
 
 export type Resource = {
@@ -164,8 +164,8 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "best_lap", label: "Mejor vuelta", type: "text" },
       { name: "dnf", label: "DNF (abandonó)", type: "boolean" },
       { name: "dsq", label: "DSQ (descalificado)", type: "boolean" },
-      { name: "pole", label: "Pole", type: "boolean" },
-      { name: "fastest_lap", label: "Vuelta rápida", type: "boolean" },
+      { name: "pole", label: "Pole", type: "boolean", feature: "pole_fl" },
+      { name: "fastest_lap", label: "Vuelta rápida", type: "boolean", feature: "pole_fl" },
       { name: "notes", label: "Notas", type: "text" },
     ],
   },

@@ -30,6 +30,7 @@ export type SiteSettings = {
   maintenance_message: string | null;
   default_locale: string;
   recalc_enabled: boolean;
+  pole_fl_enabled: boolean;
   updated_at: string;
 };
 

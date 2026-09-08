@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getRoundResults } from "@/lib/data";
+import { getRoundResults, getSettings } from "@/lib/data";
 import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, PanelTitle, EmptyState } from "@/components/ui";
 import { flagEmoji, formatDateTime, ordinal } from "@/lib/format";
@@ -16,8 +16,13 @@ export default async function RoundResultPage({
   params: Promise<{ round: string }>;
 }) {
   const { round: roundId } = await params;
-  const [data, d] = await Promise.all([getRoundResults(roundId), getDict()]);
+  const [data, d, settings] = await Promise.all([
+    getRoundResults(roundId),
+    getDict(),
+    getSettings(),
+  ]);
   if (!data) notFound();
+  const poleFl = settings.pole_fl_enabled;
 
   const { round, results } = data;
   const sessionLabel: Record<SessionType, string> = {
@@ -69,8 +74,10 @@ export default async function RoundResultPage({
                           <span className="font-semibold">
                             {flagEmoji(r.driver?.country_code)} {r.driver?.name ?? "—"}
                           </span>
-                          {r.pole && <span className="ml-2 chip text-[10px]">POLE</span>}
-                          {r.fastest_lap && <span className="ml-1 chip text-[10px]">{d.common.fl}</span>}
+                          {poleFl && r.pole && <span className="ml-2 chip text-[10px]">POLE</span>}
+                          {poleFl && r.fastest_lap && (
+                            <span className="ml-1 chip text-[10px]">{d.common.fl}</span>
+                          )}
                         </td>
                         <td className="num text-muted">{r.time_text ?? "—"}</td>
                         <td className="num font-extrabold">{r.points || ""}</td>

@@ -1,4 +1,4 @@
-import { getCategories, getDriverStandings, getTeamStandings } from "@/lib/data";
+import { getCategories, getDriverStandings, getSettings, getTeamStandings } from "@/lib/data";
 import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, PanelTitle, EmptyState, TeamChip } from "@/components/ui";
 import { CategoryTabs } from "@/components/category-tabs";
@@ -12,7 +12,12 @@ export default async function PosicionesPage({
   searchParams: Promise<{ cat?: string }>;
 }) {
   const { cat } = await searchParams;
-  const [categories, d] = await Promise.all([getCategories(), getDict()]);
+  const [categories, d, settings] = await Promise.all([
+    getCategories(),
+    getDict(),
+    getSettings(),
+  ]);
+  const poleFl = settings.pole_fl_enabled;
   const activeCat = cat ? categories.find((c) => c.slug === cat) : categories[0];
 
   const [drivers, teams] = await Promise.all([
@@ -49,8 +54,8 @@ export default async function PosicionesPage({
                     <th className="num">{d.common.points}</th>
                     <th className="num">{d.common.wins}</th>
                     <th className="num">{d.common.podiums}</th>
-                    <th className="num">{d.common.poles}</th>
-                    <th className="num">{d.common.fl}</th>
+                    {poleFl && <th className="num">{d.common.poles}</th>}
+                    {poleFl && <th className="num">{d.common.fl}</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -73,8 +78,8 @@ export default async function PosicionesPage({
                       <td className="num font-extrabold">{row.points}</td>
                       <td className="num">{row.wins}</td>
                       <td className="num">{row.podiums}</td>
-                      <td className="num">{row.poles}</td>
-                      <td className="num">{row.fastest_laps}</td>
+                      {poleFl && <td className="num">{row.poles}</td>}
+                      {poleFl && <td className="num">{row.fastest_laps}</td>}
                     </tr>
                   ))}
                 </tbody>

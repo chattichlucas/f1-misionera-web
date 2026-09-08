@@ -25,11 +25,12 @@ async function load(roundId: string, sessionType: "race" | "sprint") {
 
   const { data: settings } = await sb
     .from("site_settings")
-    .select("points_scheme, recalc_enabled")
+    .select("points_scheme, recalc_enabled, pole_fl_enabled")
     .eq("id", 1)
     .maybeSingle();
   if (!settings?.recalc_enabled) throw new Error("La función de recálculo está deshabilitada");
   const scheme = (settings?.points_scheme ?? DEFAULT_SETTINGS.points_scheme) as PointsScheme;
+  const poleFl = settings?.pole_fl_enabled ?? true;
 
   const { data: results } = await sb
     .from("session_results")
@@ -70,8 +71,8 @@ async function load(roundId: string, sessionType: "race" | "sprint") {
   });
 
   const arr = sessionType === "sprint" ? scheme.sprint : scheme.race;
-  const flPoint = sessionType === "race" ? scheme.fastest_lap : 0;
-  const polePoint = sessionType === "race" ? scheme.pole : 0;
+  const flPoint = poleFl && sessionType === "race" ? scheme.fastest_lap : 0;
+  const polePoint = poleFl && sessionType === "race" ? scheme.pole : 0;
   const computed = computeClassification(rows, arr, flPoint, polePoint);
   return { sb, computed };
 }

@@ -124,6 +124,7 @@ export async function saveSettings(
     row["inscriptions_open"] = formData.get("inscriptions_open") === "on";
     row["maintenance_mode"] = formData.get("maintenance_mode") === "on";
     row["recalc_enabled"] = formData.get("recalc_enabled") === "on";
+    row["pole_fl_enabled"] = formData.get("pole_fl_enabled") === "on";
     const loc = String(formData.get("default_locale") || "es");
     row["default_locale"] = ["es", "en", "pt"].includes(loc) ? loc : "es";
 
