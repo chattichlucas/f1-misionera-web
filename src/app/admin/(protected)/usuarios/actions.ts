@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getMyPermissions, MODULES, type Level } from "@/lib/permissions";
+import { logAudit } from "@/lib/audit";
 
 export type ActionResult = { ok?: boolean; error?: string };
 
@@ -32,6 +34,21 @@ export async function setUserPermissions(
       .from("user_permissions")
       .upsert(rows, { onConflict: "user_id,module" });
     if (error) return { error: error.message };
+
+    let targetEmail = userId;
+    try {
+      const { data } = await createAdminClient().auth.admin.getUserById(userId);
+      targetEmail = data.user?.email ?? userId;
+    } catch {
+      /* noop */
+    }
+    await logAudit({
+      action: "permissions",
+      entity: "Usuarios y permisos",
+      entityId: userId,
+      summary: `Actualizó permisos de ${targetEmail}`,
+      details: { permissions: Object.fromEntries(rows.map((r) => [r.module, r.level])) },
+    });
 
     revalidatePath("/admin/usuarios");
     revalidatePath("/", "layout");

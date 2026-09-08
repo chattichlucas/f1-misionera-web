@@ -71,6 +71,7 @@ export default async function AdminLayout({
   if (canView(mp, "settings"))
     nav.push({ href: "/admin/ajustes", label: "Ajustes del sitio" });
   if (mp.superadmin) nav.push({ href: "/admin/usuarios", label: "Usuarios y permisos" });
+  if (mp.superadmin) nav.push({ href: "/admin/auditoria", label: "Auditoría" });
   nav.push({ href: "/admin/cuenta", label: "Mi cuenta" });
 
   return (

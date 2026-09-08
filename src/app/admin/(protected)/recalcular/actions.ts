@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMyPermissions, canEdit } from "@/lib/permissions";
 import { DEFAULT_SETTINGS } from "@/lib/settings";
 import { computeClassification, type RaceRow, type RecalcRow } from "@/lib/recalc";
+import { logAudit } from "@/lib/audit";
 import type { PointsScheme } from "@/lib/types";
 
 export type RecalcResult = {
@@ -104,6 +105,12 @@ export async function applyRecalc(
         .eq("id", r.id);
       if (error) return { error: error.message };
     }
+    await logAudit({
+      action: "recalc",
+      entity: "Resultados",
+      entityId: roundId,
+      summary: `Recalculó la sesión ${sessionType} de una fecha (${computed.length} pilotos)`,
+    });
     revalidatePath("/", "layout");
     return { session: sessionType, rows: computed, applied: true };
   } catch (e) {

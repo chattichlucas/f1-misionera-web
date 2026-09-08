@@ -5,6 +5,16 @@ import { createClient } from "@/lib/supabase/server";
 import { RESOURCES } from "@/lib/admin/resources";
 import { getMyPermissions, canEdit, canView, type Level } from "@/lib/permissions";
 import { parseDuration } from "@/lib/format";
+import { logAudit } from "@/lib/audit";
+
+/** Etiqueta legible de una fila (name / title / headline / round_number…). */
+function rowLabel(row: Record<string, unknown>): string {
+  for (const k of ["name", "title", "headline", "heading", "league_name"]) {
+    if (typeof row[k] === "string" && row[k]) return row[k] as string;
+  }
+  if (row["round_number"] != null) return `Ronda ${row["round_number"]}`;
+  return "";
+}
 
 async function requireAdmin() {
   const sb = await createClient();
@@ -72,6 +82,14 @@ export async function saveResource(
     }
     if (error) return { error: error.message };
 
+    await logAudit({
+      action: id ? "update" : "create",
+      entity: resource.label,
+      entityId: id || null,
+      summary: `${id ? "Editó" : "Creó"} ${resource.label}${rowLabel(row) ? ` · ${rowLabel(row)}` : ""}`,
+      details: { table: resource.table, values: row },
+    });
+
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
@@ -89,8 +107,18 @@ export async function deleteResource(
     const resource = RESOURCES[resourceKey];
     if (!resource || !id) return { error: "Datos inválidos" };
     const sb = await requirePerm(resourceKey, "edit");
+    const { data: before } = await sb.from(resource.table).select("*").eq("id", id).maybeSingle();
     const { error } = await sb.from(resource.table).delete().eq("id", id);
     if (error) return { error: error.message };
+
+    await logAudit({
+      action: "delete",
+      entity: resource.label,
+      entityId: id,
+      summary: `Borró ${resource.label}${before && rowLabel(before) ? ` · ${rowLabel(before)}` : ""}`,
+      details: { table: resource.table, deleted: before ?? null },
+    });
+
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
@@ -139,6 +167,17 @@ export async function saveSettings(
 
     const { error } = await sb.from("site_settings").upsert(row, { onConflict: "id" });
     if (error) return { error: error.message };
+    await logAudit({
+      action: "settings",
+      entity: "Ajustes del sitio",
+      summary: "Actualizó los ajustes del sitio",
+      details: {
+        maintenance_mode: row["maintenance_mode"],
+        recalc_enabled: row["recalc_enabled"],
+        pole_fl_enabled: row["pole_fl_enabled"],
+        default_locale: row["default_locale"],
+      },
+    });
     revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
@@ -154,8 +193,19 @@ export async function setInscriptionStatus(
     const sb = await requirePerm("inscriptions", "edit");
     const id = String(formData.get("id"));
     const status = String(formData.get("status"));
+    const { data: before } = await sb
+      .from("inscriptions")
+      .select("full_name")
+      .eq("id", id)
+      .maybeSingle();
     const { error } = await sb.from("inscriptions").update({ status }).eq("id", id);
     if (error) return { error: error.message };
+    await logAudit({
+      action: "inscription",
+      entity: "Inscripciones",
+      entityId: id,
+      summary: `Cambió inscripción de ${before?.full_name ?? "?"} a "${status}"`,
+    });
     revalidatePath("/admin/inscripciones");
     return { ok: true };
   } catch (e) {
@@ -170,8 +220,19 @@ export async function deleteInscription(
   try {
     const sb = await requirePerm("inscriptions", "edit");
     const id = String(formData.get("id"));
+    const { data: before } = await sb
+      .from("inscriptions")
+      .select("full_name")
+      .eq("id", id)
+      .maybeSingle();
     const { error } = await sb.from("inscriptions").delete().eq("id", id);
     if (error) return { error: error.message };
+    await logAudit({
+      action: "delete",
+      entity: "Inscripciones",
+      entityId: id,
+      summary: `Borró inscripción de ${before?.full_name ?? "?"}`,
+    });
     revalidatePath("/admin/inscripciones");
     return { ok: true };
   } catch (e) {
