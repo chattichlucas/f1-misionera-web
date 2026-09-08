@@ -1,16 +1,26 @@
-import { getRounds } from "@/lib/data";
+import { getRounds, getSettings } from "@/lib/data";
 import { getMyPermissions, canEdit } from "@/lib/permissions";
 import { RecalcTool } from "./tool";
 
 export const dynamic = "force-dynamic";
 
 export default async function RecalcularPage() {
-  const mp = await getMyPermissions();
+  const [mp, settings] = await Promise.all([getMyPermissions(), getSettings()]);
   if (!canEdit(mp, "session_results")) {
     return (
       <div className="panel p-6">
         <h1 className="text-lg font-extrabold">Recalcular carrera</h1>
         <p className="mt-2 text-sm text-muted">Necesitás permiso de edición en Resultados.</p>
+      </div>
+    );
+  }
+  if (!settings.recalc_enabled) {
+    return (
+      <div className="panel p-6">
+        <h1 className="text-lg font-extrabold">Recalcular carrera</h1>
+        <p className="mt-2 text-sm text-muted">
+          Función deshabilitada. Activala en <b>Ajustes del sitio → Funciones</b>.
+        </p>
       </div>
     );
   }

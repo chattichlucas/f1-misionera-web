@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { RESOURCES } from "@/lib/admin/resources";
 import { ResourceManager } from "@/components/admin/resource-manager";
 import { getMyPermissions, canView, canEdit } from "@/lib/permissions";
+import { getSettings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +13,15 @@ export default async function AdminResourcePage({
   params: Promise<{ resource: string }>;
 }) {
   const { resource: key } = await params;
-  const resource = RESOURCES[key];
-  if (!resource) notFound();
+  const base = RESOURCES[key];
+  if (!base) notFound();
 
-  const mp = await getMyPermissions();
+  const [mp, settings] = await Promise.all([getMyPermissions(), getSettings()]);
+  const features: Record<string, boolean> = { recalc: settings.recalc_enabled };
+  const resource = {
+    ...base,
+    fields: base.fields.filter((f) => !f.feature || features[f.feature]),
+  };
   if (!canView(mp, key)) {
     return (
       <div className="panel p-6">

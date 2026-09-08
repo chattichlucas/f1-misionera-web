@@ -25,9 +25,10 @@ async function load(roundId: string, sessionType: "race" | "sprint") {
 
   const { data: settings } = await sb
     .from("site_settings")
-    .select("points_scheme")
+    .select("points_scheme, recalc_enabled")
     .eq("id", 1)
     .maybeSingle();
+  if (!settings?.recalc_enabled) throw new Error("La función de recálculo está deshabilitada");
   const scheme = (settings?.points_scheme ?? DEFAULT_SETTINGS.points_scheme) as PointsScheme;
 
   const { data: results } = await sb

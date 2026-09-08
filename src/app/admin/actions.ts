@@ -55,6 +55,8 @@ export async function saveResource(
 
     const row: Record<string, unknown> = {};
     for (const f of resource.fields) {
+      // campos detrás de un feature flag: si no vinieron en el form, no los tocamos
+      if (f.feature && !formData.has(f.name)) continue;
       if (f.type === "boolean") {
         row[f.name] = formData.get(f.name) === "on";
       } else {
@@ -121,6 +123,7 @@ export async function saveSettings(
     }
     row["inscriptions_open"] = formData.get("inscriptions_open") === "on";
     row["maintenance_mode"] = formData.get("maintenance_mode") === "on";
+    row["recalc_enabled"] = formData.get("recalc_enabled") === "on";
     const loc = String(formData.get("default_locale") || "es");
     row["default_locale"] = ["es", "en", "pt"].includes(loc) ? loc : "es";
 

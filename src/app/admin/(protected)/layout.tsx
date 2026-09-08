@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSettings } from "@/lib/data";
 import { RESOURCE_LIST } from "@/lib/admin/resources";
 import {
   getMyPermissions,
@@ -55,7 +56,7 @@ export default async function AdminLayout({
   if (!user) redirect("/admin/login");
 
   await ensureSuperadmin(user.email);
-  const mp = await getMyPermissions();
+  const [mp, settings] = await Promise.all([getMyPermissions(), getSettings()]);
 
   const nav: { href: string; label: string }[] = [{ href: "/admin", label: "Resumen" }];
   if (canView(mp, "inscriptions"))
@@ -63,7 +64,7 @@ export default async function AdminLayout({
   for (const r of RESOURCE_LIST) {
     if (canView(mp, r.key)) nav.push({ href: `/admin/manage/${r.key}`, label: r.label });
   }
-  if (canEdit(mp, "session_results"))
+  if (canEdit(mp, "session_results") && settings.recalc_enabled)
     nav.push({ href: "/admin/recalcular", label: "Recalcular carrera" });
   if (canView(mp, "settings"))
     nav.push({ href: "/admin/ajustes", label: "Ajustes del sitio" });

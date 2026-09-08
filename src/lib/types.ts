@@ -29,6 +29,7 @@ export type SiteSettings = {
   maintenance_mode: boolean;
   maintenance_message: string | null;
   default_locale: string;
+  recalc_enabled: boolean;
   updated_at: string;
 };
 

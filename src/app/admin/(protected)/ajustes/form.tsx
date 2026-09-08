@@ -91,6 +91,18 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
       </div>
 
       <div className="panel space-y-3 p-5">
+        <h2 className="font-bold">Funciones</h2>
+        <label className="flex items-center gap-2 text-sm font-semibold">
+          <input type="checkbox" name="recalc_enabled" defaultChecked={s.recalc_enabled} className="h-5 w-5" />
+          Recálculo de carrera por tiempo + penalizaciones
+        </label>
+        <p className="text-xs text-muted">
+          Habilita el menú &quot;Recalcular carrera&quot; y los campos de tiempo total y
+          penalización en segundos.
+        </p>
+      </div>
+
+      <div className="panel space-y-3 p-5">
         <h2 className="font-bold">Modo mantenimiento</h2>
         <label className="flex items-center gap-2 text-sm font-semibold">
           <input type="checkbox" name="maintenance_mode" defaultChecked={s.maintenance_mode} className="h-5 w-5" />
