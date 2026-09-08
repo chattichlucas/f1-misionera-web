@@ -223,7 +223,7 @@ export const RESOURCES: Record<string, Resource> = {
 
   organizers: {
     key: "organizers",
-    label: "Organizadores (contacto)",
+    label: "Contacto",
     table: "organizers",
     listColumns: ["name", "role", "sort"],
     orderBy: { column: "sort" },

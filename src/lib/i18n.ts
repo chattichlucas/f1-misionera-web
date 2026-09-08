@@ -2,10 +2,10 @@
 // La resolución del locale (cookie / settings) vive en i18n-server.ts.
 
 export type Locale = "es" | "en" | "pt";
-export const LOCALES: { code: Locale; label: string }[] = [
-  { code: "es", label: "ES" },
-  { code: "en", label: "EN" },
-  { code: "pt", label: "PT" },
+export const LOCALES: { code: Locale; label: string; flag: string }[] = [
+  { code: "es", label: "Español", flag: "🇦🇷" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "pt", label: "Português", flag: "🇧🇷" },
 ];
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
