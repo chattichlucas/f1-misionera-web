@@ -26,7 +26,34 @@ export type SiteSettings = {
   contact_email: string | null;
   points_scheme: PointsScheme;
   inscriptions_open: boolean;
+  maintenance_mode: boolean;
+  maintenance_message: string | null;
+  default_locale: string;
   updated_at: string;
+};
+
+export type Sponsor = {
+  id: string;
+  name: string;
+  description: string | null;
+  logo_url: string | null;
+  url: string | null;
+  tier: string | null;
+  sort: number;
+  active: boolean;
+  created_at: string;
+};
+
+export type Organizer = {
+  id: string;
+  name: string;
+  role: string | null;
+  email: string | null;
+  discord: string | null;
+  whatsapp: string | null;
+  photo_url: string | null;
+  sort: number;
+  created_at: string;
 };
 
 export type PointsScheme = {

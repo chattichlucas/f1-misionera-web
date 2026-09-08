@@ -16,6 +16,7 @@ const NAV = [
   { href: "/penalizaciones", label: "Penalizaciones" },
   { href: "/reglamento", label: "Reglamento" },
   { href: "/inscripciones", label: "Inscripciones" },
+  { href: "/contacto", label: "Contacto" },
 ];
 
 export function SiteHeader({ settings }: { settings: SiteSettings }) {

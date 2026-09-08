@@ -15,6 +15,8 @@ export const MODULES: { key: string; label: string }[] = [
   { key: "penalties", label: "Penalizaciones" },
   { key: "news", label: "Noticias" },
   { key: "regulation_sections", label: "Reglamento" },
+  { key: "sponsors", label: "Sponsors" },
+  { key: "organizers", label: "Organizadores" },
   { key: "inscriptions", label: "Inscripciones" },
   { key: "settings", label: "Ajustes del sitio" },
 ];

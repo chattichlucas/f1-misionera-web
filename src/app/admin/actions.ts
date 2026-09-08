@@ -105,6 +105,7 @@ export async function saveSettings(
       "color_muted", "color_primary", "color_primary_fg", "color_accent",
       "color_positive", "color_negative", "discord_url", "instagram_url",
       "youtube_url", "twitch_url", "tiktok_url", "contact_email",
+      "maintenance_message",
     ];
     const row: Record<string, unknown> = { id: 1 };
     for (const k of keys) {
@@ -116,6 +117,9 @@ export async function saveSettings(
       if (!row[k]) row[k] = k === "league_name" ? "Mi Liga" : "Temporada 2026";
     }
     row["inscriptions_open"] = formData.get("inscriptions_open") === "on";
+    row["maintenance_mode"] = formData.get("maintenance_mode") === "on";
+    const loc = String(formData.get("default_locale") || "es");
+    row["default_locale"] = ["es", "en", "pt"].includes(loc) ? loc : "es";
 
     const pointsRaw = String(formData.get("points_scheme") || "").trim();
     if (pointsRaw) {

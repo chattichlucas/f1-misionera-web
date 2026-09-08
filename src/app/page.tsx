@@ -5,20 +5,23 @@ import {
   getNews,
   getNextRound,
   getSettings,
+  getSponsors,
   getTeamStandings,
 } from "@/lib/data";
 import { Countdown } from "@/components/countdown";
+import { SponsorsBlock } from "@/components/sponsors";
 import { Panel, PanelTitle, EmptyState, TeamChip } from "@/components/ui";
 import { flagEmoji, formatDateTime } from "@/lib/format";
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [settings, nextRound, news, categories] = await Promise.all([
+  const [settings, nextRound, news, categories, sponsors] = await Promise.all([
     getSettings(),
     getNextRound(),
     getNews(3),
     getCategories(),
+    getSponsors(),
   ]);
 
   const firstCat = categories[0];
@@ -192,6 +195,13 @@ export default async function HomePage() {
           )}
         </Panel>
       </section>
+
+      {/* SPONSORS */}
+      {sponsors.length > 0 && (
+        <section className="shell">
+          <SponsorsBlock sponsors={sponsors} />
+        </section>
+      )}
 
       {/* CATEGORIAS / CTA */}
       <section className="shell grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

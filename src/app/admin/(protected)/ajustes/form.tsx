@@ -51,6 +51,38 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
           <input type="checkbox" name="inscriptions_open" defaultChecked={s.inscriptions_open} className="h-5 w-5" />
           Inscripciones abiertas
         </label>
+        <label className="block text-sm">
+          <span className="mb-1 block font-semibold">Idioma por defecto</span>
+          <select
+            name="default_locale"
+            defaultValue={s.default_locale}
+            className={input}
+            style={st}
+          >
+            <option value="es">Español</option>
+            <option value="en">English</option>
+            <option value="pt">Português</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="panel space-y-3 p-5">
+        <h2 className="font-bold">Modo mantenimiento</h2>
+        <label className="flex items-center gap-2 text-sm font-semibold">
+          <input type="checkbox" name="maintenance_mode" defaultChecked={s.maintenance_mode} className="h-5 w-5" />
+          Sitio en mantenimiento (el público ve un aviso; el panel sigue accesible)
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block font-semibold">Mensaje</span>
+          <textarea
+            name="maintenance_message"
+            rows={2}
+            defaultValue={s.maintenance_message ?? ""}
+            className={input}
+            style={st}
+            placeholder="Volvemos pronto. Estamos actualizando el sitio."
+          />
+        </label>
       </div>
 
       <div className="panel space-y-4 p-5">

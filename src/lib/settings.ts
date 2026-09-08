@@ -31,6 +31,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     pole: 0,
   },
   inscriptions_open: true,
+  maintenance_mode: false,
+  maintenance_message: null,
+  default_locale: "es",
   updated_at: new Date(0).toISOString(),
 };
 

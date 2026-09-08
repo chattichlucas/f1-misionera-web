@@ -1,7 +1,11 @@
 import Link from "next/link";
 import type { SiteSettings } from "@/lib/types";
+import { getSponsors } from "@/lib/data";
+import { SponsorStrip } from "@/components/sponsors";
 
-export function SiteFooter({ settings }: { settings: SiteSettings }) {
+export async function SiteFooter({ settings }: { settings: SiteSettings }) {
+  const sponsors = await getSponsors();
+
   const socials: Array<[string, string | null]> = [
     ["Discord", settings.discord_url],
     ["Instagram", settings.instagram_url],
@@ -12,6 +16,16 @@ export function SiteFooter({ settings }: { settings: SiteSettings }) {
 
   return (
     <footer className="border-t" style={{ borderColor: "var(--line)" }}>
+      {sponsors.length > 0 && (
+        <div className="border-b py-8" style={{ borderColor: "var(--line)" }}>
+          <div className="shell">
+            <p className="mb-4 text-center text-[11px] font-bold uppercase tracking-[0.18em] text-muted">
+              Sponsors
+            </p>
+            <SponsorStrip sponsors={sponsors} />
+          </div>
+        </div>
+      )}
       <div className="shell flex flex-col gap-6 py-10 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-extrabold uppercase tracking-wide">

@@ -203,6 +203,40 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "body", label: "Texto", type: "textarea", required: true },
     ],
   },
+
+  sponsors: {
+    key: "sponsors",
+    label: "Sponsors",
+    table: "sponsors",
+    listColumns: ["name", "tier", "sort", "active"],
+    orderBy: { column: "sort" },
+    fields: [
+      { name: "name", label: "Nombre", type: "text", required: true },
+      { name: "tier", label: "Categoría", type: "text", help: "ej: Principal, Oficial, Colaborador" },
+      { name: "logo_url", label: "Logo (URL)", type: "text" },
+      { name: "url", label: "Sitio web (URL)", type: "text" },
+      { name: "description", label: "Descripción", type: "textarea" },
+      { name: "sort", label: "Orden", type: "number", defaultValue: 0 },
+      { name: "active", label: "Visible", type: "boolean", defaultValue: true },
+    ],
+  },
+
+  organizers: {
+    key: "organizers",
+    label: "Organizadores (contacto)",
+    table: "organizers",
+    listColumns: ["name", "role", "sort"],
+    orderBy: { column: "sort" },
+    fields: [
+      { name: "name", label: "Nombre", type: "text", required: true },
+      { name: "role", label: "Rol", type: "text", help: "ej: Director, Comisario, Caster" },
+      { name: "email", label: "Email", type: "text" },
+      { name: "discord", label: "Discord", type: "text" },
+      { name: "whatsapp", label: "WhatsApp / teléfono", type: "text" },
+      { name: "photo_url", label: "Foto (URL)", type: "text" },
+      { name: "sort", label: "Orden", type: "number", defaultValue: 0 },
+    ],
+  },
 };
 
 export const RESOURCE_LIST = Object.values(RESOURCES);

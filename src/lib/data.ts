@@ -7,11 +7,13 @@ import type {
   Driver,
   DriverStanding,
   News,
+  Organizer,
   Penalty,
   RegulationSection,
   Round,
   SessionResult,
   SiteSettings,
+  Sponsor,
   Team,
   TeamStanding,
 } from "@/lib/types";
@@ -161,4 +163,22 @@ export async function getRegulation(): Promise<RegulationSection[]> {
   const sb = await createClient();
   const { data } = await sb.from("regulation_sections").select("*").order("sort");
   return (data ?? []) as RegulationSection[];
+}
+
+export async function getSponsors(): Promise<Sponsor[]> {
+  if (!hasSupabaseEnv()) return [];
+  const sb = await createClient();
+  const { data } = await sb
+    .from("sponsors")
+    .select("*")
+    .eq("active", true)
+    .order("sort");
+  return (data ?? []) as Sponsor[];
+}
+
+export async function getOrganizers(): Promise<Organizer[]> {
+  if (!hasSupabaseEnv()) return [];
+  const sb = await createClient();
+  const { data } = await sb.from("organizers").select("*").order("sort");
+  return (data ?? []) as Organizer[];
 }
