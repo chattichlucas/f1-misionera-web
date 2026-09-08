@@ -6,6 +6,7 @@ import { RESOURCE_LIST } from "@/lib/admin/resources";
 import {
   getMyPermissions,
   canView,
+  canEdit,
   canSeeAnything,
   SUPERADMIN_EMAILS,
 } from "@/lib/permissions";
@@ -62,6 +63,8 @@ export default async function AdminLayout({
   for (const r of RESOURCE_LIST) {
     if (canView(mp, r.key)) nav.push({ href: `/admin/manage/${r.key}`, label: r.label });
   }
+  if (canEdit(mp, "session_results"))
+    nav.push({ href: "/admin/recalcular", label: "Recalcular carrera" });
   if (canView(mp, "settings"))
     nav.push({ href: "/admin/ajustes", label: "Ajustes del sitio" });
   if (mp.superadmin) nav.push({ href: "/admin/usuarios", label: "Usuarios y permisos" });

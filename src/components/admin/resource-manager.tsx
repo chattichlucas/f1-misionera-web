@@ -6,6 +6,7 @@ import { saveResource, deleteResource } from "@/app/admin/actions";
 import type { Field, Resource } from "@/lib/admin/resources";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { ColorInput } from "@/components/admin/color-input";
+import { formatDuration } from "@/lib/format";
 
 type Row = Record<string, unknown>;
 type RefOptions = Record<string, { id: string; label: string }[]>;
@@ -39,6 +40,15 @@ function FieldInput({
       return <textarea {...common} rows={4} defaultValue={String(v ?? "")} />;
     case "number":
       return <input {...common} type="number" step="any" defaultValue={v === null ? "" : String(v)} />;
+    case "duration":
+      return (
+        <input
+          {...common}
+          type="text"
+          placeholder="h:mm:ss.mmm"
+          defaultValue={typeof v === "number" ? formatDuration(v) : String(v ?? "")}
+        />
+      );
     case "boolean":
       return (
         <input
@@ -96,6 +106,7 @@ function display(field: Field, value: unknown, refOptions: RefOptions): string {
     return refOptions[field.name]?.find((o) => o.id === value)?.label ?? String(value);
   }
   if (field.type === "datetime") return new Date(String(value)).toLocaleString("es-AR");
+  if (field.type === "duration") return formatDuration(Number(value));
   return String(value);
 }
 

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { RESOURCES } from "@/lib/admin/resources";
 import { getMyPermissions, canEdit, canView, type Level } from "@/lib/permissions";
+import { parseDuration } from "@/lib/format";
 
 async function requireAdmin() {
   const sb = await createClient();
@@ -32,6 +33,8 @@ function coerce(value: FormDataEntryValue | null, type: string) {
       return s === "" ? null : Number(s);
     case "datetime":
       return s === "" ? null : new Date(s).toISOString();
+    case "duration":
+      return s === "" ? null : parseDuration(s);
     default:
       return s === "" ? null : s;
   }

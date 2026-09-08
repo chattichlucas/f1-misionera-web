@@ -149,6 +149,7 @@ export type SessionResult = {
   pole: boolean;
   fastest_lap: boolean;
   time_text: string | null;
+  finish_ms: number | null;
   best_lap: string | null;
   notes: string | null;
 };
@@ -162,6 +163,7 @@ export type Penalty = {
   detail: string | null;
   sanction: string | null;
   license_points: number;
+  time_penalty_seconds: number;
   created_at: string;
 };
 

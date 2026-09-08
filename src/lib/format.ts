@@ -52,3 +52,36 @@ export function ordinal(n: number | null | undefined): string {
 export function classNames(...xs: Array<string | false | null | undefined>): string {
   return xs.filter(Boolean).join(" ");
 }
+
+/** "1:32:04.551" | "1:04.551" | "64.5" -> milisegundos. Devuelve null si no parsea. */
+export function parseDuration(input: string | null | undefined): number | null {
+  if (!input) return null;
+  const s = String(input).trim().replace(",", ".");
+  if (!s) return null;
+  const m = s.match(/^(?:(\d+):)?(?:(\d{1,2}):)?(\d{1,2}(?:\.\d{1,3})?)$/);
+  if (!m) return null;
+  let h = 0, min = 0, sec = 0;
+  if (m[1] != null && m[2] != null) {
+    h = Number(m[1]); min = Number(m[2]); sec = Number(m[3]);
+  } else if (m[2] != null) {
+    min = Number(m[2]); sec = Number(m[3]);
+  } else if (m[1] != null) {
+    min = Number(m[1]); sec = Number(m[3]);
+  } else {
+    sec = Number(m[3]);
+  }
+  return Math.round((h * 3600 + min * 60 + sec) * 1000);
+}
+
+/** milisegundos -> "1:32:04.551" */
+export function formatDuration(ms: number | null | undefined): string {
+  if (ms == null || !Number.isFinite(ms)) return "—";
+  const total = Math.max(0, Math.round(ms));
+  const h = Math.floor(total / 3600000);
+  const min = Math.floor((total % 3600000) / 60000);
+  const sec = Math.floor((total % 60000) / 1000);
+  const mmm = total % 1000;
+  const pad = (n: number, w = 2) => String(n).padStart(w, "0");
+  const body = `${pad(min)}:${pad(sec)}.${pad(mmm, 3)}`;
+  return h > 0 ? `${h}:${body}` : body;
+}

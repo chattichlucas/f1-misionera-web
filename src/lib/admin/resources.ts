@@ -7,7 +7,8 @@ export type FieldType =
   | "color"
   | "select"
   | "reference"
-  | "image";
+  | "image"
+  | "duration";
 
 export type Field = {
   name: string;
@@ -155,7 +156,9 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "position", label: "Posición", type: "number" },
       { name: "points", label: "Puntos", type: "number", defaultValue: 0 },
       { name: "grid", label: "Grilla", type: "number" },
-      { name: "time_text", label: "Tiempo / Gap", type: "text" },
+      { name: "finish_ms", label: "Tiempo total de carrera", type: "duration",
+        help: "h:mm:ss.mmm (ej: 1:32:04.551). Necesario para recalcular con penalizaciones." },
+      { name: "time_text", label: "Tiempo / Gap (texto libre)", type: "text" },
       { name: "best_lap", label: "Mejor vuelta", type: "text" },
       { name: "dnf", label: "DNF (abandonó)", type: "boolean" },
       { name: "dsq", label: "DSQ (descalificado)", type: "boolean" },
@@ -177,7 +180,9 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "category_id", label: "Categoría", type: "reference", refTable: "categories", refLabel: "name" },
       { name: "headline", label: "Título", type: "text", required: true },
       { name: "detail", label: "Detalle", type: "textarea" },
-      { name: "sanction", label: "Sanción", type: "text", help: "ej: +5s, Drive-through" },
+      { name: "sanction", label: "Sanción (texto)", type: "text", help: "ej: +5s, Drive-through, Amonestación" },
+      { name: "time_penalty_seconds", label: "Penalización de tiempo (segundos)", type: "number", defaultValue: 0,
+        help: "Se suma al tiempo del piloto al recalcular la carrera. 0 = no afecta la clasificación." },
       { name: "license_points", label: "Puntos de licencia", type: "number", defaultValue: 0 },
     ],
   },
