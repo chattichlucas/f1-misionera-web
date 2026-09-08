@@ -123,6 +123,29 @@ export function ResourceManager({
   const [error, setError] = useState<string | null>(null);
 
   const fieldByName = new Map(resource.fields.map((f) => [f.name, f]));
+  const hasSlug = resource.fields.some((f) => f.name === "slug");
+
+  function slugify(s: string) {
+    return s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function onFormInput(e: React.FormEvent<HTMLFormElement>) {
+    if (!hasSlug) return;
+    const t = e.target as HTMLInputElement;
+    if (t.name === "slug") {
+      t.dataset.touched = "1";
+      return;
+    }
+    if (t.name === "name") {
+      const slug = e.currentTarget.querySelector<HTMLInputElement>('input[name="slug"]');
+      if (slug && !slug.dataset.touched) slug.value = slugify(t.value);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -177,7 +200,7 @@ export function ResourceManager({
       )}
 
       {editing && (
-        <form onSubmit={onSubmit} className="panel space-y-4 p-5">
+        <form onSubmit={onSubmit} onInput={onFormInput} className="panel space-y-4 p-5">
           <input type="hidden" name="__resource" value={resource.key} />
           {editing.id ? <input type="hidden" name="__id" value={String(editing.id)} /> : null}
           <div className="grid gap-4 sm:grid-cols-2">

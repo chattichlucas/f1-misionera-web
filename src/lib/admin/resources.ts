@@ -59,7 +59,8 @@ export const RESOURCES: Record<string, Resource> = {
     fields: [
       { name: "season_id", label: "Temporada", type: "reference", refTable: "seasons", refLabel: "name", required: true },
       { name: "name", label: "Nombre", type: "text", required: true },
-      { name: "slug", label: "Slug (url)", type: "text", required: true, help: "ej: a, b, c" },
+      { name: "slug", label: "Slug (etiqueta para la URL)", type: "text", required: true,
+        help: "Se completa solo desde el nombre. Minúsculas sin espacios: a, b, masters…" },
       { name: "weekday", label: "Día", type: "text", help: "ej: Miércoles" },
       { name: "time_text", label: "Horario", type: "text", help: "ej: 22:00 ARG" },
       { name: "description", label: "Descripción", type: "textarea" },
