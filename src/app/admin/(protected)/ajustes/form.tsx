@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { saveSettings, type ActionResult } from "@/app/admin/actions";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { ColorInput } from "@/components/admin/color-input";
 import type { SiteSettings } from "@/lib/types";
 
 const input = "w-full rounded-lg bg-[var(--panel-2)] px-3 py-2 text-sm outline-none border";
@@ -22,10 +23,10 @@ function Text({ name, label, def, help }: { name: string; label: string; def: st
 
 function Color({ name, label, def }: { name: string; label: string; def: string }) {
   return (
-    <label className="flex items-center justify-between gap-2 text-sm">
+    <div className="flex items-center justify-between gap-2 text-sm">
       <span className="font-semibold">{label}</span>
-      <input type="color" name={name} defaultValue={def} className="h-9 w-16 rounded border bg-transparent" style={st} />
-    </label>
+      <ColorInput name={name} defaultValue={def} />
+    </div>
   );
 }
 
@@ -110,7 +111,7 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
 
       <div className="panel space-y-4 p-5">
         <h2 className="font-bold">Colores</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Color name="color_primary" label="Primario" def={s.color_primary} />
           <Color name="color_primary_fg" label="Texto sobre primario" def={s.color_primary_fg} />
           <Color name="color_accent" label="Acento" def={s.color_accent} />

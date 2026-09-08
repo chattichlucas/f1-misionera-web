@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { saveResource, deleteResource } from "@/app/admin/actions";
 import type { Field, Resource } from "@/lib/admin/resources";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { ColorInput } from "@/components/admin/color-input";
 
 type Row = Record<string, unknown>;
 type RefOptions = Record<string, { id: string; label: string }[]>;
@@ -50,15 +51,7 @@ function FieldInput({
     case "datetime":
       return <input {...common} type="datetime-local" defaultValue={toDatetimeLocal(value)} />;
     case "color":
-      return (
-        <input
-          type="color"
-          name={field.name}
-          defaultValue={String(v || "#888888")}
-          className="h-10 w-16 rounded border bg-transparent"
-          style={inputStyle}
-        />
-      );
+      return <ColorInput name={field.name} defaultValue={String(v || "#888888")} />;
     case "select":
       return (
         <select {...common} defaultValue={String(v ?? "")}>
