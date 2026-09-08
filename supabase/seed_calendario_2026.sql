@@ -1,14 +1,16 @@
 -- =====================================================================
---  Calendario 2026 · rondas 13–24 · jueves 21:30 ARG desde el 17/09/2026
---  Requiere haber corrido seed_circuits_2026.sql antes.
---  Cambiá 'a' por el slug de tu categoría. Re-ejecutable (upsert).
+--  Calendario 2026 · rondas 13-24 · jueves 21:30 ARG desde el 17/09/2026
+--  Requiere seed_circuits_2026.sql. Re-ejecutable (upsert).
+--  Categoria: slug 'categoria-a' (cambialo si corresponde).
 -- =====================================================================
 
 create unique index if not exists rounds_cat_round_key
   on public.rounds (category_id, round_number);
 
+delete from public.rounds where round_number = 1;
+
 with cat as (
-  select id from public.categories where slug = 'a' limit 1
+  select id from public.categories where slug = 'categoria-a' limit 1
 ),
 data(round_number, circuit_name, race_date, is_sprint) as (
   values
@@ -34,5 +36,3 @@ on conflict (category_id, round_number) do update
   set circuit_id = excluded.circuit_id,
       race_date  = excluded.race_date,
       is_sprint  = excluded.is_sprint;
-
--- Para otra categoría: cambiá 'a' arriba y volvé a correr todo el bloque.
