@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { saveSettings, type ActionResult } from "@/app/admin/actions";
+import { ImageUpload } from "@/components/admin/image-upload";
 import type { SiteSettings } from "@/lib/types";
 
 const input = "w-full rounded-lg bg-[var(--panel-2)] px-3 py-2 text-sm outline-none border";
@@ -44,8 +45,30 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
           <Text name="league_name" label="Nombre de la liga" def={s.league_name} />
           <Text name="season_label" label="Etiqueta de temporada" def={s.season_label} help="ej: Temporada 2026 · Cat. A" />
           <Text name="tagline" label="Lema / descripción" def={s.tagline} />
-          <Text name="logo_url" label="Logo (URL)" def={s.logo_url} />
-          <Text name="hero_image_url" label="Imagen de portada (URL)" def={s.hero_image_url} />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <span className="mb-1 block text-sm font-semibold">Logo</span>
+            <ImageUpload
+              name="logo_url"
+              value={s.logo_url}
+              folder="brand"
+              maxWidth={320}
+              maxKB={150}
+              hint="PNG transparente o SVG. Recomendado < 100 KB."
+            />
+          </div>
+          <div>
+            <span className="mb-1 block text-sm font-semibold">Imagen de portada</span>
+            <ImageUpload
+              name="hero_image_url"
+              value={s.hero_image_url}
+              folder="brand"
+              maxWidth={1920}
+              maxKB={500}
+              hint="Foto de fondo del inicio. WebP/JPG, recomendado < 400 KB."
+            />
+          </div>
         </div>
         <label className="flex items-center gap-2 text-sm font-semibold">
           <input type="checkbox" name="inscriptions_open" defaultChecked={s.inscriptions_open} className="h-5 w-5" />

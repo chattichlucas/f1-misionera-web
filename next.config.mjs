@@ -10,6 +10,10 @@ const nextConfig = {
     // TODO: poner en `false` una vez que se pueda correr `npm run typecheck` localmente.
     ignoreBuildErrors: true,
   },
+  experimental: {
+    // subida de imágenes vía server action
+    serverActions: { bodySizeLimit: "6mb" },
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },

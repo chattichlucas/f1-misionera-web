@@ -6,7 +6,8 @@ export type FieldType =
   | "datetime"
   | "color"
   | "select"
-  | "reference";
+  | "reference"
+  | "image";
 
 export type Field = {
   name: string;
@@ -18,6 +19,10 @@ export type Field = {
   refLabel?: string; // columna a mostrar del refTable
   help?: string;
   defaultValue?: string | number | boolean;
+  // para image:
+  folder?: string;
+  maxWidth?: number;
+  maxKB?: number;
 };
 
 export type Resource = {
@@ -76,7 +81,8 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "car_name", label: "Auto", type: "text" },
       { name: "color", label: "Color principal", type: "color", defaultValue: "#ff6500" },
       { name: "color2", label: "Color secundario", type: "color", defaultValue: "#222222" },
-      { name: "logo_url", label: "Logo (URL)", type: "text" },
+      { name: "logo_url", label: "Logo", type: "image", folder: "teams", maxWidth: 320, maxKB: 200,
+        help: "PNG con fondo transparente o SVG. Recomendado < 100 KB." },
       { name: "sort", label: "Orden", type: "number", defaultValue: 0 },
     ],
   },
@@ -91,7 +97,7 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "name", label: "Nombre", type: "text", required: true },
       { name: "country", label: "País", type: "text" },
       { name: "country_code", label: "Código país (ISO-2)", type: "text", help: "ej: ar, br, it — dibuja la bandera" },
-      { name: "map_url", label: "Mapa del trazado (URL)", type: "text" },
+      { name: "map_url", label: "Mapa del trazado", type: "image", folder: "circuits", maxWidth: 800, maxKB: 250 },
       { name: "length_km", label: "Longitud (km)", type: "number" },
       { name: "laps", label: "Vueltas", type: "number" },
     ],
@@ -112,7 +118,7 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "number", label: "Número", type: "number" },
       { name: "gamertag", label: "Gamertag", type: "text" },
       { name: "seat", label: "Butaca", type: "select", options: ["titular", "reserva"], defaultValue: "titular" },
-      { name: "photo_url", label: "Foto (URL)", type: "text" },
+      { name: "photo_url", label: "Foto", type: "image", folder: "drivers", maxWidth: 480, maxKB: 150 },
       { name: "bio", label: "Bio", type: "textarea" },
       { name: "sort", label: "Orden", type: "number", defaultValue: 0 },
     ],
@@ -186,7 +192,7 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "slug", label: "Slug (url)", type: "text", required: true },
       { name: "excerpt", label: "Bajada", type: "textarea" },
       { name: "body", label: "Cuerpo", type: "textarea" },
-      { name: "cover_url", label: "Portada (URL)", type: "text" },
+      { name: "cover_url", label: "Portada", type: "image", folder: "news", maxWidth: 1280, maxKB: 350 },
       { name: "published", label: "Publicada", type: "boolean", defaultValue: true },
     ],
   },
@@ -213,7 +219,8 @@ export const RESOURCES: Record<string, Resource> = {
     fields: [
       { name: "name", label: "Nombre", type: "text", required: true },
       { name: "tier", label: "Categoría", type: "text", help: "ej: Principal, Oficial, Colaborador" },
-      { name: "logo_url", label: "Logo (URL)", type: "text" },
+      { name: "logo_url", label: "Logo", type: "image", folder: "sponsors", maxWidth: 400, maxKB: 200,
+        help: "PNG con fondo transparente o SVG. Recomendado < 100 KB." },
       { name: "url", label: "Sitio web (URL)", type: "text" },
       { name: "description", label: "Descripción", type: "textarea" },
       { name: "sort", label: "Orden", type: "number", defaultValue: 0 },
@@ -233,7 +240,7 @@ export const RESOURCES: Record<string, Resource> = {
       { name: "email", label: "Email", type: "text" },
       { name: "discord", label: "Discord", type: "text" },
       { name: "whatsapp", label: "WhatsApp / teléfono", type: "text" },
-      { name: "photo_url", label: "Foto (URL)", type: "text" },
+      { name: "photo_url", label: "Foto", type: "image", folder: "organizers", maxWidth: 320, maxKB: 120 },
       { name: "sort", label: "Orden", type: "number", defaultValue: 0 },
     ],
   },

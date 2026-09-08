@@ -105,9 +105,20 @@ sudo docker compose up -d --force-recreate
 
 ## Migración manual (si no usás SUPABASE_DB_URL)
 
-Corré `supabase/migrations/0001_init.sql` en el **SQL Editor** de Supabase cada vez
-que cambie el esquema. Es idempotente (`create ... if not exists`, `create or
-replace`, `drop policy if exists`).
+Corré **en orden** cada archivo de `supabase/migrations/` en el **SQL Editor** de
+Supabase cada vez que cambie el esquema. Son idempotentes.
+
+## Subida de imágenes
+
+El panel comprime y reescala las imágenes en el navegador (a WebP) antes de subirlas
+al bucket **`media`**.
+
+- `0004_storage.sql` crea el bucket. Si falla por permisos: **Supabase → Storage →
+  New bucket** → nombre `media` → **Public bucket** → Create.
+- Necesita `SUPABASE_SERVICE_ROLE_KEY` bien seteada (la subida corre en el servidor).
+
+Pesos recomendados: logos SVG/PNG < 100 KB · fotos WebP < 150 KB · portada del inicio
+< 400 KB. El panel rechaza lo que supere el límite de cada campo tras comprimir.
 
 ## Desarrollo local (requiere Node 18+)
 

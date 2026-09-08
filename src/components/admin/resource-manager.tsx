@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveResource, deleteResource } from "@/app/admin/actions";
 import type { Field, Resource } from "@/lib/admin/resources";
+import { ImageUpload } from "@/components/admin/image-upload";
 
 type Row = Record<string, unknown>;
 type RefOptions = Record<string, { id: string; label: string }[]>;
@@ -78,6 +79,17 @@ function FieldInput({
             </option>
           ))}
         </select>
+      );
+    case "image":
+      return (
+        <ImageUpload
+          name={field.name}
+          value={value ? String(value) : ""}
+          folder={field.folder}
+          maxWidth={field.maxWidth}
+          maxKB={field.maxKB}
+          hint={field.help}
+        />
       );
     default:
       return <input {...common} type="text" defaultValue={String(v ?? "")} />;
@@ -172,14 +184,20 @@ export function ResourceManager({
             {resource.fields.map((f) => (
               <label
                 key={f.name}
-                className={f.type === "textarea" ? "block text-sm sm:col-span-2" : "block text-sm"}
+                className={
+                  f.type === "textarea" || f.type === "image"
+                    ? "block text-sm sm:col-span-2"
+                    : "block text-sm"
+                }
               >
                 <span className="mb-1 block font-semibold">
                   {f.label}
                   {f.required && <span className="text-primary"> *</span>}
                 </span>
                 <FieldInput field={f} value={editing[f.name]} refOptions={refOptions} />
-                {f.help && <span className="mt-1 block text-xs text-muted">{f.help}</span>}
+                {f.help && f.type !== "image" && (
+                  <span className="mt-1 block text-xs text-muted">{f.help}</span>
+                )}
               </label>
             ))}
           </div>
