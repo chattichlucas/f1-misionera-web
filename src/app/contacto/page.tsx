@@ -1,11 +1,15 @@
 import { getOrganizers, getSettings } from "@/lib/data";
+import { getDict } from "@/lib/i18n";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
 
 export const revalidate = 60;
-export const metadata = { title: "Contacto" };
 
 export default async function ContactoPage() {
-  const [organizers, settings] = await Promise.all([getOrganizers(), getSettings()]);
+  const [organizers, settings, d] = await Promise.all([
+    getOrganizers(),
+    getSettings(),
+    getDict(),
+  ]);
 
   const socials: Array<[string, string | null]> = [
     ["Discord", settings.discord_url],
@@ -17,15 +21,15 @@ export default async function ContactoPage() {
 
   return (
     <div className="space-y-6">
-      <PageHero eyebrow={settings.league_name} title="Contacto">
-        Escribinos por los canales oficiales o directamente a la organización.
+      <PageHero eyebrow={settings.league_name} title={d.pages.contactTitle}>
+        {d.pages.contactSub}
       </PageHero>
 
       <section className="shell grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Panel className="p-5">
-          <h2 className="font-bold">Organización</h2>
+          <h2 className="font-bold">{d.pages.contactOrg}</h2>
           {organizers.length === 0 ? (
-            <EmptyState>Todavía no se cargaron los contactos.</EmptyState>
+            <EmptyState>{d.pages.contactEmpty}</EmptyState>
           ) : (
             <ul className="mt-3 divide-y" style={{ borderColor: "var(--line)" }}>
               {organizers.map((o) => (
@@ -56,7 +60,7 @@ export default async function ContactoPage() {
         </Panel>
 
         <Panel className="p-5">
-          <h2 className="font-bold">Canales</h2>
+          <h2 className="font-bold">{d.pages.contactChannels}</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {socials
               .filter(([, u]) => Boolean(u))

@@ -1,23 +1,23 @@
 import { getPenalties } from "@/lib/data";
+import { getDict } from "@/lib/i18n";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
 import { flagEmoji, formatDate } from "@/lib/format";
 
 export const revalidate = 60;
-export const metadata = { title: "Penalizaciones" };
 
 export default async function PenalizacionesPage() {
-  const penalties = await getPenalties();
+  const [penalties, d] = await Promise.all([getPenalties(), getDict()]);
 
   return (
     <div className="space-y-6">
-      <PageHero eyebrow="Control deportivo" title="Penalizaciones">
-        Sanciones aplicadas por los comisarios durante la temporada.
+      <PageHero eyebrow={d.pages.penaltiesTitle} title={d.pages.penaltiesTitle}>
+        {d.pages.penaltiesSub}
       </PageHero>
 
       <section className="shell">
         <Panel>
           {penalties.length === 0 ? (
-            <EmptyState>No hay sanciones cargadas.</EmptyState>
+            <EmptyState>{d.pages.penaltiesEmpty}</EmptyState>
           ) : (
             <ul className="divide-y" style={{ borderColor: "var(--line)" }}>
               {penalties.map((p) => (

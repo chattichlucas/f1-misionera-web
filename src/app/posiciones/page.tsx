@@ -1,10 +1,10 @@
 import { getCategories, getDriverStandings, getTeamStandings } from "@/lib/data";
+import { getDict } from "@/lib/i18n";
 import { PageHero, Panel, PanelTitle, EmptyState, TeamChip } from "@/components/ui";
 import { CategoryTabs } from "@/components/category-tabs";
 import { flagEmoji } from "@/lib/format";
 
 export const revalidate = 60;
-export const metadata = { title: "Posiciones" };
 
 export default async function PosicionesPage({
   searchParams,
@@ -12,7 +12,7 @@ export default async function PosicionesPage({
   searchParams: Promise<{ cat?: string }>;
 }) {
   const { cat } = await searchParams;
-  const categories = await getCategories();
+  const [categories, d] = await Promise.all([getCategories(), getDict()]);
   const activeCat = cat ? categories.find((c) => c.slug === cat) : categories[0];
 
   const [drivers, teams] = await Promise.all([
@@ -22,58 +22,59 @@ export default async function PosicionesPage({
 
   return (
     <div className="space-y-6">
-      <PageHero eyebrow="Campeonato" title="Posiciones">
-        Clasificación de pilotos y constructores{activeCat ? ` · ${activeCat.name}` : ""}.
+      <PageHero eyebrow={d.pages.standingsTitle} title={d.pages.standingsTitle}>
+        {d.pages.standingsSub}
       </PageHero>
 
       <CategoryTabs
         categories={categories}
         active={activeCat?.slug ?? null}
         basePath="/posiciones"
+        allLabel={d.common.all}
       />
 
       <section className="shell space-y-4">
         <Panel>
-          <PanelTitle title="Pilotos" hint={`${drivers.length} pilotos`} />
+          <PanelTitle title={d.home.drivers} hint={activeCat?.name} />
           {drivers.length === 0 ? (
-            <EmptyState>Sin resultados cargados todavía.</EmptyState>
+            <EmptyState>{d.home.noResults}</EmptyState>
           ) : (
             <div className="overflow-x-auto">
               <table className="data-table min-w-[640px]">
                 <thead>
                   <tr>
-                    <th>Pos</th>
-                    <th>Piloto</th>
-                    <th>Equipo</th>
-                    <th className="num">Pts</th>
-                    <th className="num">Vict.</th>
-                    <th className="num">Podios</th>
-                    <th className="num">Poles</th>
-                    <th className="num">VR</th>
+                    <th>{d.common.pos}</th>
+                    <th>{d.common.driver}</th>
+                    <th>{d.common.team}</th>
+                    <th className="num">{d.common.points}</th>
+                    <th className="num">{d.common.wins}</th>
+                    <th className="num">{d.common.podiums}</th>
+                    <th className="num">{d.common.poles}</th>
+                    <th className="num">{d.common.fl}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {drivers.map((d, i) => (
-                    <tr key={d.driver_id}>
+                  {drivers.map((row, i) => (
+                    <tr key={row.driver_id}>
                       <td>
                         <span className={`rank-badge ${i < 3 ? `r${i + 1}` : ""}`}>{i + 1}</span>
                       </td>
                       <td>
                         <span className="font-semibold">
-                          {flagEmoji(d.country_code)} {d.name}
+                          {flagEmoji(row.country_code)} {row.name}
                         </span>
-                        {d.number != null && (
-                          <span className="ml-1 text-xs text-muted">#{d.number}</span>
+                        {row.number != null && (
+                          <span className="ml-1 text-xs text-muted">#{row.number}</span>
                         )}
                       </td>
                       <td>
-                        <TeamChip name={d.team_name} color={d.team_color} color2={d.team_color2} />
+                        <TeamChip name={row.team_name} color={row.team_color} color2={row.team_color2} />
                       </td>
-                      <td className="num font-extrabold">{d.points}</td>
-                      <td className="num">{d.wins}</td>
-                      <td className="num">{d.podiums}</td>
-                      <td className="num">{d.poles}</td>
-                      <td className="num">{d.fastest_laps}</td>
+                      <td className="num font-extrabold">{row.points}</td>
+                      <td className="num">{row.wins}</td>
+                      <td className="num">{row.podiums}</td>
+                      <td className="num">{row.poles}</td>
+                      <td className="num">{row.fastest_laps}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -83,17 +84,17 @@ export default async function PosicionesPage({
         </Panel>
 
         <Panel>
-          <PanelTitle title="Constructores" />
+          <PanelTitle title={d.home.constructors} />
           {teams.length === 0 ? (
-            <EmptyState>Sin resultados cargados todavía.</EmptyState>
+            <EmptyState>{d.home.noResults}</EmptyState>
           ) : (
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Pos</th>
-                  <th>Escudería</th>
-                  <th className="num">Pts</th>
-                  <th className="num">Vict.</th>
+                  <th>{d.common.pos}</th>
+                  <th>{d.nav.teams}</th>
+                  <th className="num">{d.common.points}</th>
+                  <th className="num">{d.common.wins}</th>
                 </tr>
               </thead>
               <tbody>

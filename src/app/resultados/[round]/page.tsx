@@ -1,17 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getRoundResults } from "@/lib/data";
+import { getDict } from "@/lib/i18n";
 import { PageHero, Panel, PanelTitle, EmptyState } from "@/components/ui";
 import { flagEmoji, formatDateTime, ordinal } from "@/lib/format";
 import type { SessionType } from "@/lib/types";
 
 export const revalidate = 60;
 
-const SESSION_LABEL: Record<SessionType, string> = {
-  qualifying: "Clasificación",
-  sprint: "Sprint",
-  race: "Carrera",
-};
 const SESSION_ORDER: SessionType[] = ["qualifying", "sprint", "race"];
 
 export default async function RoundResultPage({
@@ -20,22 +16,27 @@ export default async function RoundResultPage({
   params: Promise<{ round: string }>;
 }) {
   const { round: roundId } = await params;
-  const data = await getRoundResults(roundId);
+  const [data, d] = await Promise.all([getRoundResults(roundId), getDict()]);
   if (!data) notFound();
 
   const { round, results } = data;
+  const sessionLabel: Record<SessionType, string> = {
+    qualifying: d.pages.qualifying,
+    sprint: d.common.sprint,
+    race: d.pages.race,
+  };
 
   return (
     <div className="space-y-6">
       <PageHero
-        eyebrow={`Ronda ${round.round_number} · ${round.category?.name ?? ""}`}
-        title={`${flagEmoji(round.circuit?.country_code)} ${round.circuit?.name ?? "Ronda"}`}
+        eyebrow={`${d.common.round} ${round.round_number} · ${round.category?.name ?? ""}`}
+        title={`${flagEmoji(round.circuit?.country_code)} ${round.circuit?.name ?? d.common.round}`}
       >
         {formatDateTime(round.race_date)}
-        {round.is_sprint ? " · Fin de semana Sprint" : ""}
+        {round.is_sprint ? ` · ${d.common.sprint}` : ""}
         {"  "}
         <Link href="/resultados" className="ml-2 font-bold text-primary">
-          ← Volver
+          ← {d.common.back}
         </Link>
       </PageHero>
 
@@ -47,15 +48,15 @@ export default async function RoundResultPage({
           if (rows.length === 0) return null;
           return (
             <Panel key={st}>
-              <PanelTitle title={SESSION_LABEL[st]} />
+              <PanelTitle title={sessionLabel[st]} />
               <div className="overflow-x-auto">
                 <table className="data-table min-w-[560px]">
                   <thead>
                     <tr>
-                      <th>Pos</th>
-                      <th>Piloto</th>
-                      <th className="num">Tiempo / Gap</th>
-                      <th className="num">Pts</th>
+                      <th>{d.common.pos}</th>
+                      <th>{d.common.driver}</th>
+                      <th className="num">{d.common.time}</th>
+                      <th className="num">{d.common.points}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -69,7 +70,7 @@ export default async function RoundResultPage({
                             {flagEmoji(r.driver?.country_code)} {r.driver?.name ?? "—"}
                           </span>
                           {r.pole && <span className="ml-2 chip text-[10px]">POLE</span>}
-                          {r.fastest_lap && <span className="ml-1 chip text-[10px]">VR</span>}
+                          {r.fastest_lap && <span className="ml-1 chip text-[10px]">{d.common.fl}</span>}
                         </td>
                         <td className="num text-muted">{r.time_text ?? "—"}</td>
                         <td className="num font-extrabold">{r.points || ""}</td>
@@ -84,7 +85,7 @@ export default async function RoundResultPage({
 
         {results.length === 0 && (
           <Panel>
-            <EmptyState>Todavía no se cargaron los resultados de esta ronda.</EmptyState>
+            <EmptyState>{d.pages.resultsEmpty}</EmptyState>
           </Panel>
         )}
       </section>

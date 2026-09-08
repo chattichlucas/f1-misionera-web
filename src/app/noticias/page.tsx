@@ -1,22 +1,22 @@
 import Link from "next/link";
 import { getNews } from "@/lib/data";
+import { getDict } from "@/lib/i18n";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
 import { formatDateTime } from "@/lib/format";
 
 export const revalidate = 60;
-export const metadata = { title: "Noticias" };
 
 export default async function NoticiasPage() {
-  const news = await getNews();
+  const [news, d] = await Promise.all([getNews(), getDict()]);
 
   return (
     <div className="space-y-6">
-      <PageHero eyebrow="Comunidad" title="Noticias" />
+      <PageHero eyebrow={d.home.latestNews} title={d.pages.newsTitle} />
 
       <section className="shell">
         <Panel>
           {news.length === 0 ? (
-            <EmptyState>No hay noticias publicadas.</EmptyState>
+            <EmptyState>{d.pages.newsEmpty}</EmptyState>
           ) : (
             <ul className="divide-y" style={{ borderColor: "var(--line)" }}>
               {news.map((n) => (

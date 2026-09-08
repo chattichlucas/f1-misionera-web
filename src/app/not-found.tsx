@@ -1,12 +1,14 @@
 import Link from "next/link";
+import { getDict } from "@/lib/i18n";
 
-export default function NotFound() {
+export default async function NotFound() {
+  const d = await getDict();
   return (
     <div className="shell flex min-h-[60vh] flex-col items-center justify-center text-center">
       <p className="eyebrow">Error 404</p>
-      <h1 className="mt-2 text-3xl font-extrabold">Página no encontrada</h1>
+      <h1 className="mt-2 text-3xl font-extrabold">{d.pages.notFoundTitle}</h1>
       <Link href="/" className="btn btn-primary mt-6">
-        Volver al inicio
+        {d.pages.backHome}
       </Link>
     </div>
   );

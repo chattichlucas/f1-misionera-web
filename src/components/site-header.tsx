@@ -4,22 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { SiteSettings } from "@/lib/types";
+import type { Locale } from "@/lib/i18n";
 import { classNames } from "@/lib/format";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
-const NAV = [
-  { href: "/", label: "Inicio" },
-  { href: "/calendario", label: "Calendario" },
-  { href: "/posiciones", label: "Posiciones" },
-  { href: "/pilotos", label: "Pilotos" },
-  { href: "/escuderias", label: "Escuderías" },
-  { href: "/resultados", label: "Resultados" },
-  { href: "/penalizaciones", label: "Penalizaciones" },
-  { href: "/reglamento", label: "Reglamento" },
-  { href: "/inscripciones", label: "Inscripciones" },
-  { href: "/contacto", label: "Contacto" },
-];
+export type NavItem = { href: string; label: string };
 
-export function SiteHeader({ settings }: { settings: SiteSettings }) {
+export function SiteHeader({
+  settings,
+  nav,
+  locale,
+}: {
+  settings: SiteSettings;
+  nav: NavItem[];
+  locale: Locale;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -29,7 +28,11 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
   return (
     <header
       className="sticky top-0 z-40 border-b"
-      style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 88%, transparent)", backdropFilter: "blur(8px)" }}
+      style={{
+        borderColor: "var(--line)",
+        background: "color-mix(in srgb, var(--bg) 88%, transparent)",
+        backdropFilter: "blur(8px)",
+      }}
     >
       <div className="shell flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3 font-extrabold">
@@ -50,7 +53,7 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -65,21 +68,24 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
           ))}
         </nav>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="btn btn-ghost !px-3 !py-2 lg:hidden"
-          aria-label="Menú"
-          aria-expanded={open}
-        >
-          {open ? "Cerrar" : "Menú"}
-        </button>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher current={locale} />
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="btn btn-ghost !px-3 !py-2 lg:hidden"
+            aria-label="Menú"
+            aria-expanded={open}
+          >
+            {open ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
 
       {open && (
         <nav className="border-t lg:hidden" style={{ borderColor: "var(--line)" }}>
           <div className="shell grid grid-cols-2 gap-1 py-3">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

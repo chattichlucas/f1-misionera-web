@@ -1,18 +1,17 @@
 import { getSettings } from "@/lib/data";
+import { getDict } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "En mantenimiento" };
 
 export default async function MaintenancePage() {
-  const s = await getSettings();
+  const [s, d] = await Promise.all([getSettings(), getDict()]);
   return (
     <div className="shell flex min-h-[60vh] flex-col items-center justify-center text-center">
       <div className="panel max-w-md p-8">
         <p className="eyebrow">{s.league_name}</p>
-        <h1 className="mt-2 text-3xl font-extrabold">Sitio en mantenimiento</h1>
+        <h1 className="mt-2 text-3xl font-extrabold">{d.pages.maintenanceTitle}</h1>
         <p className="mt-3 text-muted">
-          {s.maintenance_message?.trim() ||
-            "Estamos actualizando el sitio. Volvé en un rato."}
+          {s.maintenance_message?.trim() || d.pages.maintenanceMsg}
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm">
           {s.discord_url && (

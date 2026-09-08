@@ -3,7 +3,13 @@ import type { SiteSettings } from "@/lib/types";
 import { getSponsors } from "@/lib/data";
 import { SponsorStrip } from "@/components/sponsors";
 
-export async function SiteFooter({ settings }: { settings: SiteSettings }) {
+export async function SiteFooter({
+  settings,
+  panelLabel = "Panel",
+}: {
+  settings: SiteSettings;
+  panelLabel?: string;
+}) {
   const sponsors = await getSponsors();
 
   const socials: Array<[string, string | null]> = [
@@ -58,7 +64,7 @@ export async function SiteFooter({ settings }: { settings: SiteSettings }) {
       <div className="shell pb-8 text-xs text-muted">
         © {new Date().getFullYear()} {settings.league_name}. ·{" "}
         <Link href="/admin" className="hover:text-text">
-          Panel
+          {panelLabel}
         </Link>
       </div>
     </footer>

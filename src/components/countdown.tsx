@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+type Labels = { d: string; h: string; m: string; s: string; live: string };
+
 function diff(target: number) {
   const ms = Math.max(0, target - Date.now());
   return {
@@ -13,7 +15,13 @@ function diff(target: number) {
   };
 }
 
-export function Countdown({ iso }: { iso: string | null }) {
+export function Countdown({
+  iso,
+  labels = { d: "Días", h: "Horas", m: "Min", s: "Seg", live: "¡En pista!" },
+}: {
+  iso: string | null;
+  labels?: Labels;
+}) {
   const target = iso ? new Date(iso).getTime() : NaN;
   const [t, setT] = useState(() => (Number.isNaN(target) ? null : diff(target)));
 
@@ -25,8 +33,7 @@ export function Countdown({ iso }: { iso: string | null }) {
   }, [target]);
 
   if (!t) return null;
-  if (t.done)
-    return <p className="text-sm font-bold text-primary">¡En pista!</p>;
+  if (t.done) return <p className="text-sm font-bold text-primary">{labels.live}</p>;
 
   const box = (value: number, label: string) => (
     <div
@@ -42,10 +49,10 @@ export function Countdown({ iso }: { iso: string | null }) {
 
   return (
     <div className="grid grid-cols-4 gap-2">
-      {box(t.d, "Días")}
-      {box(t.h, "Horas")}
-      {box(t.m, "Min")}
-      {box(t.s, "Seg")}
+      {box(t.d, labels.d)}
+      {box(t.h, labels.h)}
+      {box(t.m, labels.m)}
+      {box(t.s, labels.s)}
     </div>
   );
 }

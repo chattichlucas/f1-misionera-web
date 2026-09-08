@@ -8,12 +8,14 @@ export function CategoryTabs({
   basePath,
   param = "cat",
   extraTabs = [],
+  allLabel = "Todas",
 }: {
   categories: Category[];
   active: string | null;
   basePath: string;
   param?: string;
   extraTabs?: { key: string; label: string }[];
+  allLabel?: string;
 }) {
   if (categories.length === 0 && extraTabs.length === 0) return null;
 
@@ -37,7 +39,7 @@ export function CategoryTabs({
 
   return (
     <div className="shell flex flex-wrap gap-2">
-      {tab(null, "Todas")}
+      {tab(null, allLabel)}
       {categories.map((c) => tab(c.slug, c.name))}
       {extraTabs.map((e) => tab(e.key, e.label))}
     </div>

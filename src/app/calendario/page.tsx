@@ -1,17 +1,11 @@
 import Link from "next/link";
 import { getCategories, getRounds } from "@/lib/data";
+import { getDict } from "@/lib/i18n";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
 import { CategoryTabs } from "@/components/category-tabs";
 import { flagEmoji, formatDateTime } from "@/lib/format";
 
 export const revalidate = 60;
-export const metadata = { title: "Calendario" };
-
-const STATUS_LABEL: Record<string, string> = {
-  proximo: "Próxima",
-  finalizado: "Finalizada",
-  cancelado: "Cancelada",
-};
 
 export default async function CalendarioPage({
   searchParams,
@@ -19,24 +13,37 @@ export default async function CalendarioPage({
   searchParams: Promise<{ cat?: string }>;
 }) {
   const { cat } = await searchParams;
-  const [categories, rounds] = await Promise.all([getCategories(), getRounds()]);
+  const [categories, rounds, d] = await Promise.all([
+    getCategories(),
+    getRounds(),
+    getDict(),
+  ]);
 
-  const filtered = cat
-    ? rounds.filter((r) => r.category?.slug === cat)
-    : rounds;
+  const statusLabel: Record<string, string> = {
+    proximo: d.status.upcoming,
+    finalizado: d.status.finished,
+    cancelado: d.status.cancelled,
+  };
+
+  const filtered = cat ? rounds.filter((r) => r.category?.slug === cat) : rounds;
 
   return (
     <div className="space-y-6">
-      <PageHero eyebrow="Temporada 2026" title="Calendario">
-        Todas las rondas de la temporada. Las fechas finalizadas enlazan a sus resultados.
+      <PageHero eyebrow={d.pages.calendarTitle} title={d.pages.calendarTitle}>
+        {d.pages.calendarSub}
       </PageHero>
 
-      <CategoryTabs categories={categories} active={cat ?? null} basePath="/calendario" />
+      <CategoryTabs
+        categories={categories}
+        active={cat ?? null}
+        basePath="/calendario"
+        allLabel={d.common.all}
+      />
 
       <section className="shell grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.length === 0 && (
           <Panel className="sm:col-span-2 lg:col-span-3">
-            <EmptyState>No hay fechas cargadas todavía.</EmptyState>
+            <EmptyState>{d.pages.calendarEmpty}</EmptyState>
           </Panel>
         )}
         {filtered.map((r) => {
@@ -53,15 +60,15 @@ export default async function CalendarioPage({
                       r.status === "finalizado" ? "var(--positive)" : "var(--line)",
                   }}
                 >
-                  {STATUS_LABEL[r.status] ?? r.status}
+                  {statusLabel[r.status] ?? r.status}
                 </span>
               </div>
               <p className="mt-3 text-lg font-extrabold">
-                {flagEmoji(r.circuit?.country_code)} {r.circuit?.name ?? "A confirmar"}
+                {flagEmoji(r.circuit?.country_code)} {r.circuit?.name ?? "—"}
               </p>
               <p className="text-sm text-muted">
                 {r.category?.name}
-                {r.is_sprint ? " · Sprint" : ""}
+                {r.is_sprint ? ` · ${d.common.sprint}` : ""}
               </p>
               <p className="mt-1 text-sm">📅 {formatDateTime(r.race_date)}</p>
             </Panel>
