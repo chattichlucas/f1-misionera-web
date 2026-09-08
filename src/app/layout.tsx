@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { getSettings } from "@/lib/data";
 import { settingsToCssVars } from "@/lib/settings";
-import { getDict, getLocale } from "@/lib/i18n";
+import { getDict, getLocale } from "@/lib/i18n-server";
 import { SiteHeader, type NavItem } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AuthHashRedirect } from "@/components/auth-hash-redirect";

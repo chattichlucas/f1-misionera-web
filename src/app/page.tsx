@@ -8,7 +8,7 @@ import {
   getSponsors,
   getTeamStandings,
 } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { Countdown } from "@/components/countdown";
 import { SponsorsBlock } from "@/components/sponsors";
 import { Panel, PanelTitle, EmptyState, TeamChip } from "@/components/ui";

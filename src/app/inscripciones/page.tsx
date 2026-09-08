@@ -1,5 +1,5 @@
 import { getCategories, getSettings } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { PageHero } from "@/components/ui";
 import { InscriptionForm } from "./form";
 

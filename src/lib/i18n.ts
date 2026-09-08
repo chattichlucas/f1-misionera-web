@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
-import { getSettings } from "@/lib/data";
+// Módulo client-safe: solo constantes, tipos y diccionarios.
+// La resolución del locale (cookie / settings) vive en i18n-server.ts.
 
 export type Locale = "es" | "en" | "pt";
 export const LOCALES: { code: Locale; label: string }[] = [
@@ -9,7 +9,7 @@ export const LOCALES: { code: Locale; label: string }[] = [
 ];
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
-type Dict = typeof dictionaries.es;
+export type Dict = (typeof dictionaries)["es"];
 
 export const dictionaries = {
   es: {
@@ -177,22 +177,4 @@ export const dictionaries = {
 
 export function isLocale(v: unknown): v is Locale {
   return v === "es" || v === "en" || v === "pt";
-}
-
-export async function getLocale(): Promise<Locale> {
-  const store = await cookies();
-  const fromCookie = store.get(LOCALE_COOKIE)?.value;
-  if (isLocale(fromCookie)) return fromCookie;
-  try {
-    const s = await getSettings();
-    if (isLocale(s.default_locale)) return s.default_locale;
-  } catch {
-    /* noop */
-  }
-  return "es";
-}
-
-export async function getDict(): Promise<Dict> {
-  const locale = await getLocale();
-  return dictionaries[locale];
 }

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getRoundResults } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, PanelTitle, EmptyState } from "@/components/ui";
 import { flagEmoji, formatDateTime, ordinal } from "@/lib/format";
 import type { SessionType } from "@/lib/types";

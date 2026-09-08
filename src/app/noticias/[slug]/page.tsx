@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getNewsBySlug } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { PageHero } from "@/components/ui";
 import { formatDateTime } from "@/lib/format";
 

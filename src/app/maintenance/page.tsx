@@ -1,5 +1,5 @@
 import { getSettings } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 
 export const dynamic = "force-dynamic";
 

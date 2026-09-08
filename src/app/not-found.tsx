@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 
 export default async function NotFound() {
   const d = await getDict();

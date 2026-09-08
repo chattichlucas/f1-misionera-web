@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getNews } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
 import { formatDateTime } from "@/lib/format";
 

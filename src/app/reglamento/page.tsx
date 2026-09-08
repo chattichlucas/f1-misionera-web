@@ -1,5 +1,5 @@
 import { getRegulation } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
 
 export const revalidate = 60;

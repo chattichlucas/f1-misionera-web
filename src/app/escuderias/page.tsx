@@ -1,5 +1,5 @@
 import { getDrivers, getTeams } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
 import { flagEmoji } from "@/lib/format";
 

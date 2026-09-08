@@ -1,5 +1,5 @@
 import { getCategories, getDrivers, getTeams } from "@/lib/data";
-import { getDict } from "@/lib/i18n";
+import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, EmptyState, TeamChip } from "@/components/ui";
 import { CategoryTabs } from "@/components/category-tabs";
 import { flagEmoji } from "@/lib/format";
