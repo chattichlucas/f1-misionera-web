@@ -35,6 +35,7 @@ export type SiteSettings = {
   payment_amount: string | null;
   payment_alias: string | null;
   payment_holder: string | null;
+  blocked_driver_numbers: string | null;
   updated_at: string;
 };
 

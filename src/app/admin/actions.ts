@@ -6,7 +6,31 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { RESOURCES } from "@/lib/admin/resources";
 import { getMyPermissions, canEdit, canView, type Level } from "@/lib/permissions";
 import { parseDuration, argLocalToISO } from "@/lib/format";
+import { parseBlockedNumbers } from "@/lib/settings";
 import { logAudit } from "@/lib/audit";
+
+/** Valida el número de un piloto: no reservado y no repetido en la categoría. */
+async function checkDriverNumber(
+  sb: Awaited<ReturnType<typeof createClient>>,
+  categoryId: string | null,
+  num: number | null,
+  ownId: string,
+): Promise<string | null> {
+  if (num == null || !categoryId) return null;
+  const { data: settings } = await sb
+    .from("site_settings")
+    .select("blocked_driver_numbers")
+    .eq("id", 1)
+    .maybeSingle();
+  if (parseBlockedNumbers(settings?.blocked_driver_numbers).has(num)) {
+    return `El número ${num} está reservado y no se puede usar.`;
+  }
+  let q = sb.from("drivers").select("id, name").eq("category_id", categoryId).eq("number", num);
+  if (ownId) q = q.neq("id", ownId);
+  const { data: clash } = await q.maybeSingle();
+  if (clash) return `El número ${num} ya lo tiene ${clash.name} en esa categoría.`;
+  return null;
+}
 
 /** Etiqueta legible de una fila (name / title / headline / round_number…). */
 function rowLabel(row: Record<string, unknown>): string {
@@ -75,6 +99,16 @@ export async function saveResource(
       }
     }
 
+    if (resource.table === "drivers") {
+      const numErr = await checkDriverNumber(
+        sb,
+        (row.category_id as string) ?? null,
+        row.number == null ? null : Number(row.number),
+        id,
+      );
+      if (numErr) return { error: numErr };
+    }
+
     let error;
     if (id) {
       ({ error } = await sb.from(resource.table).update(row).eq("id", id));
@@ -141,6 +175,7 @@ export async function saveSettings(
       "youtube_url", "twitch_url", "tiktok_url", "contact_email",
       "maintenance_message",
       "payment_amount", "payment_alias", "payment_holder",
+      "blocked_driver_numbers",
     ];
     const row: Record<string, unknown> = { id: 1 };
     for (const k of keys) {
@@ -300,6 +335,27 @@ async function ensureDriverFromInscription(
     const gamertag = (insc.gamertag as string | null)?.trim() ?? null;
     const fullName = (insc.full_name as string | null)?.trim() ?? null;
 
+    // número preferido: solo si no está reservado ni ocupado en la categoría
+    let number = (insc.number_pref as number | null) ?? null;
+    let numberNote = "";
+    if (number != null) {
+      const { data: settings } = await admin
+        .from("site_settings")
+        .select("blocked_driver_numbers")
+        .eq("id", 1)
+        .maybeSingle();
+      const { data: taken } = await admin
+        .from("drivers")
+        .select("id")
+        .eq("category_id", categoryId)
+        .eq("number", number)
+        .maybeSingle();
+      if (parseBlockedNumbers(settings?.blocked_driver_numbers).has(number) || taken) {
+        numberNote = ` · el número ${number} no estaba disponible, quedó sin número`;
+        number = null;
+      }
+    }
+
     const { data: created, error } = await admin
       .from("drivers")
       .insert({
@@ -307,7 +363,7 @@ async function ensureDriverFromInscription(
         team_id: null,
         name: fullName ?? "Sin nombre",
         nationality: (insc.nationality as string | null) ?? null,
-        number: (insc.number_pref as number | null) ?? null,
+        number,
         gamertag,
         seat: status === "reserva" ? "reserva" : "titular",
       })
@@ -316,7 +372,7 @@ async function ensureDriverFromInscription(
     if (error || !created) return ` · no se pudo crear el piloto (${error?.message ?? "?"})`;
 
     await admin.from("inscriptions").update({ driver_id: created.id }).eq("id", inscId);
-    return " · piloto creado (sin escudería)";
+    return ` · piloto creado (sin escudería)${numberNote}`;
   } catch (e) {
     return ` · error creando piloto (${e instanceof Error ? e.message : "?"})`;
   }

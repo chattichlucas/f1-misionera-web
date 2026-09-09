@@ -86,6 +86,13 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
             <Text name="payment_holder" label="Titular de la cuenta" def={s.payment_holder} />
           </div>
         </div>
+
+        <Text
+          name="blocked_driver_numbers"
+          label="Números de piloto reservados"
+          def={s.blocked_driver_numbers}
+          help="Separados por coma. No se van a poder asignar. ej: 1, 17"
+        />
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Idioma por defecto</span>
           <select

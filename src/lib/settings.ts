@@ -40,8 +40,19 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   payment_amount: null,
   payment_alias: null,
   payment_holder: null,
+  blocked_driver_numbers: "1, 17",
   updated_at: new Date(0).toISOString(),
 };
+
+/** "1, 17 ; 33" -> Set {1, 17, 33} */
+export function parseBlockedNumbers(raw: string | null | undefined): Set<number> {
+  const out = new Set<number>();
+  for (const tok of String(raw ?? "").split(/[\s,;]+/)) {
+    const n = Number(tok);
+    if (Number.isInteger(n) && n > 0) out.add(n);
+  }
+  return out;
+}
 
 export function settingsToCssVars(s: SiteSettings): Record<string, string> {
   return {
