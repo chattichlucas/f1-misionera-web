@@ -1,8 +1,16 @@
 "use server";
 
 import { createClient, hasSupabaseEnv } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type InscriptionState = { ok?: boolean; error?: string };
+
+const PROOF_TYPES: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "application/pdf": "pdf",
+};
 
 export async function submitInscription(
   _prev: InscriptionState,
@@ -23,6 +31,28 @@ export async function submitInscription(
   const numberRaw = String(formData.get("number_pref") ?? "").trim();
   const number_pref = numberRaw ? Number(numberRaw) : null;
 
+  // --- comprobante de pago (opcional) ---
+  let payment_proof_path: string | null = null;
+  const file = formData.get("payment_proof");
+  if (file && typeof (file as Blob).arrayBuffer === "function" && (file as Blob).size > 0) {
+    const blob = file as Blob & { type: string; size: number };
+    const ext = PROOF_TYPES[blob.type];
+    if (!ext) return { error: "El comprobante tiene que ser imagen (JPG/PNG/WEBP) o PDF." };
+    if (blob.size > 5 * 1024 * 1024) return { error: "El comprobante no puede superar 5 MB." };
+    try {
+      const admin = createAdminClient();
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const buf = Buffer.from(await blob.arrayBuffer());
+      const { error: upErr } = await admin.storage
+        .from("comprobantes")
+        .upload(path, buf, { contentType: blob.type, upsert: false });
+      if (upErr) return { error: "No se pudo subir el comprobante. Probá de nuevo." };
+      payment_proof_path = path;
+    } catch {
+      return { error: "No se pudo procesar el comprobante." };
+    }
+  }
+
   const sb = await createClient();
   const { error } = await sb.from("inscriptions").insert({
     full_name,
@@ -35,6 +65,9 @@ export async function submitInscription(
     platform: String(formData.get("platform") ?? "").trim() || null,
     experience: String(formData.get("experience") ?? "").trim() || null,
     notes: String(formData.get("notes") ?? "").trim() || null,
+    payer_alias: String(formData.get("payer_alias") ?? "").trim() || null,
+    payer_name: String(formData.get("payer_name") ?? "").trim() || null,
+    payment_proof_path,
     status: "pendiente",
   });
 

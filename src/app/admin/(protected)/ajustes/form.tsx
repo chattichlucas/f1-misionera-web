@@ -76,6 +76,20 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
           Inscripciones abiertas
         </label>
         <label className="block text-sm">
+          <span className="mb-1 block font-semibold">Datos para el pago de la inscripción</span>
+          <textarea
+            name="payment_info"
+            rows={3}
+            defaultValue={s.payment_info ?? ""}
+            className={input}
+            style={st}
+            placeholder={"Transferí $X a:\nAlias: mi.liga.f1\nCVU: 0000...\nTitular: Nombre Apellido"}
+          />
+          <span className="mt-1 block text-xs text-muted">
+            Se muestra en el formulario de inscripción, arriba de la subida del comprobante.
+          </span>
+        </label>
+        <label className="block text-sm">
           <span className="mb-1 block font-semibold">Idioma por defecto</span>
           <select
             name="default_locale"

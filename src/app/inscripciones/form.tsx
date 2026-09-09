@@ -7,6 +7,7 @@ import type { Category } from "@/lib/types";
 
 const field =
   "w-full rounded-lg bg-[var(--panel-2)] px-3 py-2.5 text-sm outline-none border";
+const line = { borderColor: "var(--line)" } as const;
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -20,9 +21,11 @@ function SubmitButton() {
 export function InscriptionForm({
   categories,
   open,
+  paymentInfo,
 }: {
   categories: Category[];
   open: boolean;
+  paymentInfo?: string | null;
 }) {
   const [state, action] = useActionState<InscriptionState, FormData>(submitInscription, {});
 
@@ -31,7 +34,7 @@ export function InscriptionForm({
       <div className="panel p-6 text-sm">
         <p className="text-base font-extrabold text-positive">¡Inscripción enviada!</p>
         <p className="mt-1 text-muted">
-          La organización va a revisar tu solicitud y te va a contactar por Discord.
+          La organización va a revisar tu solicitud y el comprobante, y te va a contactar por Discord.
         </p>
       </div>
     );
@@ -48,28 +51,23 @@ export function InscriptionForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Nombre y apellido *</span>
-          <input name="full_name" required className={field} style={{ borderColor: "var(--line)" }} />
+          <input name="full_name" required className={field} style={line} />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Gamertag / usuario *</span>
-          <input name="gamertag" required className={field} style={{ borderColor: "var(--line)" }} />
+          <input name="gamertag" required className={field} style={line} />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Nacionalidad</span>
-          <input name="nationality" className={field} style={{ borderColor: "var(--line)" }} />
+          <input name="nationality" className={field} style={line} />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Número preferido</span>
-          <input name="number_pref" type="number" min={1} max={99} className={field} style={{ borderColor: "var(--line)" }} />
+          <input name="number_pref" type="number" min={1} max={99} className={field} style={line} />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Categoría</span>
-          <select
-            name="category_id"
-            className={field}
-            style={{ borderColor: "var(--line)" }}
-            defaultValue=""
-          >
+          <select name="category_id" className={field} style={line} defaultValue="">
             <option value="">Sin preferencia</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
@@ -80,7 +78,7 @@ export function InscriptionForm({
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Plataforma</span>
-          <select name="platform" className={field} style={{ borderColor: "var(--line)" }} defaultValue="PC">
+          <select name="platform" className={field} style={line} defaultValue="PC">
             <option>PC</option>
             <option>PS5</option>
             <option>Xbox</option>
@@ -88,18 +86,45 @@ export function InscriptionForm({
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Discord</span>
-          <input name="discord" className={field} style={{ borderColor: "var(--line)" }} />
+          <input name="discord" className={field} style={line} />
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Experiencia previa</span>
-          <input name="experience" className={field} style={{ borderColor: "var(--line)" }} />
+          <input name="experience" className={field} style={line} />
         </label>
       </div>
 
       <label className="block text-sm">
         <span className="mb-1 block font-semibold">Notas</span>
-        <textarea name="notes" rows={3} className={field} style={{ borderColor: "var(--line)" }} />
+        <textarea name="notes" rows={3} className={field} style={line} />
       </label>
+
+      {/* --- PAGO --- */}
+      <div className="rounded-xl p-4" style={{ background: "var(--panel-2)", border: "1px solid var(--line)" }}>
+        <p className="text-sm font-extrabold">Pago de la inscripción</p>
+        {paymentInfo && (
+          <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{paymentInfo}</p>
+        )}
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm">
+            <span className="mb-1 block font-semibold">Alias / CVU desde donde pagaste</span>
+            <input name="payer_alias" className={field} style={line} />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block font-semibold">Nombre del titular de la cuenta</span>
+            <input name="payer_name" className={field} style={line} />
+          </label>
+        </div>
+        <label className="mt-4 block text-sm">
+          <span className="mb-1 block font-semibold">Comprobante (imagen o PDF, máx 5 MB)</span>
+          <input
+            type="file"
+            name="payment_proof"
+            accept="image/png,image/jpeg,image/webp,application/pdf"
+            className="block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--panel)] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-text"
+          />
+        </label>
+      </div>
 
       {state.error && (
         <p className="text-sm font-semibold text-negative">{state.error}</p>

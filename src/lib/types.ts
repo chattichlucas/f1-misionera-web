@@ -31,6 +31,7 @@ export type SiteSettings = {
   default_locale: string;
   recalc_enabled: boolean;
   pole_fl_enabled: boolean;
+  payment_info: string | null;
   updated_at: string;
 };
 
@@ -203,6 +204,9 @@ export type Inscription = {
   notes: string | null;
   status: "pendiente" | "aceptada" | "rechazada" | "reserva";
   driver_id: string | null;
+  payment_proof_path: string | null;
+  payer_alias: string | null;
+  payer_name: string | null;
   created_at: string;
 };
 

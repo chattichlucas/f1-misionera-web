@@ -17,7 +17,11 @@ export default async function InscripcionesPage() {
       </PageHero>
 
       <section className="shell">
-        <InscriptionForm categories={categories} open={settings.inscriptions_open} />
+        <InscriptionForm
+          categories={categories}
+          open={settings.inscriptions_open}
+          paymentInfo={settings.payment_info}
+        />
       </section>
     </div>
   );

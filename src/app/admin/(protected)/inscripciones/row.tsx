@@ -11,9 +11,11 @@ const STATUSES = ["pendiente", "aceptada", "reserva", "rechazada"] as const;
 export function InscriptionRow({
   row,
   editable = true,
+  proofUrl,
 }: {
   row: Inscription;
   editable?: boolean;
+  proofUrl?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -64,6 +66,32 @@ export function InscriptionRow({
           </p>
           {row.experience && <p className="mt-1 text-sm">Experiencia: {row.experience}</p>}
           {row.notes && <p className="mt-1 text-sm text-muted">{row.notes}</p>}
+
+          {(row.payer_name || row.payer_alias || row.payment_proof_path) && (
+            <div className="mt-2 rounded-lg p-2 text-sm" style={{ background: "var(--panel-2)", border: "1px solid var(--line)" }}>
+              <p className="font-semibold">Pago</p>
+              {(row.payer_name || row.payer_alias) && (
+                <p className="text-muted">
+                  {[row.payer_name, row.payer_alias].filter(Boolean).join(" · ")}
+                </p>
+              )}
+              {row.payment_proof_path && (
+                proofUrl ? (
+                  <a
+                    href={proofUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-primary"
+                  >
+                    Ver comprobante →
+                  </a>
+                ) : (
+                  <span className="text-muted">Comprobante adjunto (no se pudo generar el enlace)</span>
+                )
+              )}
+            </div>
+          )}
+
           <p className="mt-1 text-xs text-muted">{formatDateTime(row.created_at)}</p>
         </div>
         <div className="flex flex-col items-end gap-1">

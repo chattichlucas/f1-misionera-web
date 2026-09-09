@@ -36,6 +36,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   default_locale: "es",
   recalc_enabled: false,
   pole_fl_enabled: true,
+  payment_info: null,
   updated_at: new Date(0).toISOString(),
 };
 
