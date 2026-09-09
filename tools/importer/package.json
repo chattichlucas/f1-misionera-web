@@ -1,0 +1,11 @@
+{
+  "name": "liga-web-importer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": { "liga-importer": "./importer.js" },
+  "scripts": {
+    "start": "node importer.js"
+  },
+  "engines": { "node": ">=18" }
+}

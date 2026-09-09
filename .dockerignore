@@ -10,3 +10,5 @@ npm-debug.log*
 .vercel
 README.md
 DEPLOY.md
+tools
+supabase
