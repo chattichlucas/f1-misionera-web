@@ -60,7 +60,14 @@ export function InscriptionRow({
           {row.notes && <p className="mt-1 text-sm text-muted">{row.notes}</p>}
           <p className="mt-1 text-xs text-muted">{formatDateTime(row.created_at)}</p>
         </div>
-        <span className="chip uppercase">{row.status}</span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="chip uppercase">{row.status}</span>
+          {row.driver_id && (
+            <span className="chip text-[10px]" style={{ borderColor: "var(--positive)" }}>
+              piloto creado
+            </span>
+          )}
+        </div>
       </div>
 
       {!editable ? null : (

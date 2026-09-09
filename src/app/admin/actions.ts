@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { RESOURCES } from "@/lib/admin/resources";
 import { getMyPermissions, canEdit, canView, type Level } from "@/lib/permissions";
 import { parseDuration, argLocalToISO } from "@/lib/format";
@@ -193,23 +194,96 @@ export async function setInscriptionStatus(
     const sb = await requirePerm("inscriptions", "edit");
     const id = String(formData.get("id"));
     const status = String(formData.get("status"));
-    const { data: before } = await sb
+    const { data: insc } = await sb
       .from("inscriptions")
-      .select("full_name")
+      .select("*")
       .eq("id", id)
       .maybeSingle();
     const { error } = await sb.from("inscriptions").update({ status }).eq("id", id);
     if (error) return { error: error.message };
+
+    let driverNote = "";
+    if (insc && (status === "aceptada" || status === "reserva")) {
+      driverNote = await ensureDriverFromInscription(insc as Record<string, unknown>, status);
+    }
+
     await logAudit({
       action: "inscription",
       entity: "Inscripciones",
       entityId: id,
-      summary: `Cambió inscripción de ${before?.full_name ?? "?"} a "${status}"`,
+      summary: `Cambió inscripción de ${insc?.full_name ?? "?"} a "${status}"${driverNote}`,
     });
-    revalidatePath("/admin/inscripciones");
+    revalidatePath("/", "layout");
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error inesperado" };
+  }
+}
+
+/** Crea el piloto (sin escudería) a partir de una inscripción aceptada. */
+async function ensureDriverFromInscription(
+  insc: Record<string, unknown>,
+  status: string,
+): Promise<string> {
+  try {
+    const admin = createAdminClient();
+    const inscId = String(insc.id);
+    const categoryId = (insc.category_id as string) ?? null;
+    if (!categoryId) return " · sin categoría, no se creó piloto";
+
+    // ¿ya tiene piloto vinculado y existe?
+    if (insc.driver_id) {
+      const { data: existing } = await admin
+        .from("drivers")
+        .select("id")
+        .eq("id", insc.driver_id as string)
+        .maybeSingle();
+      if (existing) {
+        await admin
+          .from("drivers")
+          .update({ seat: status === "reserva" ? "reserva" : "titular" })
+          .eq("id", existing.id);
+        return " · piloto ya existía";
+      }
+    }
+
+    const gamertag = (insc.gamertag as string | null)?.trim() ?? null;
+    const fullName = (insc.full_name as string | null)?.trim() ?? null;
+
+    // ¿ya hay un piloto igual en la categoría? (evita duplicados)
+    const { data: dupes } = await admin
+      .from("drivers")
+      .select("id, gamertag, name")
+      .eq("category_id", categoryId);
+    const match = (dupes ?? []).find(
+      (d) =>
+        (gamertag && d.gamertag && d.gamertag.trim().toLowerCase() === gamertag.toLowerCase()) ||
+        (fullName && d.name && d.name.trim().toLowerCase() === fullName.toLowerCase()),
+    );
+    if (match) {
+      await admin.from("inscriptions").update({ driver_id: match.id }).eq("id", inscId);
+      return " · piloto ya existía";
+    }
+
+    const { data: created, error } = await admin
+      .from("drivers")
+      .insert({
+        category_id: categoryId,
+        team_id: null,
+        name: fullName ?? "Sin nombre",
+        nationality: (insc.nationality as string | null) ?? null,
+        number: (insc.number_pref as number | null) ?? null,
+        gamertag,
+        seat: status === "reserva" ? "reserva" : "titular",
+      })
+      .select("id")
+      .single();
+    if (error || !created) return ` · no se pudo crear el piloto (${error?.message ?? "?"})`;
+
+    await admin.from("inscriptions").update({ driver_id: created.id }).eq("id", inscId);
+    return " · piloto creado (sin escudería)";
+  } catch (e) {
+    return ` · error creando piloto (${e instanceof Error ? e.message : "?"})`;
   }
 }
 

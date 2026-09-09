@@ -202,6 +202,7 @@ export type Inscription = {
   experience: string | null;
   notes: string | null;
   status: "pendiente" | "aceptada" | "rechazada" | "reserva";
+  driver_id: string | null;
   created_at: string;
 };
 
