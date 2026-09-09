@@ -64,7 +64,6 @@ export async function submitInscription(
   const { error } = await sb.from("inscriptions").insert({
     full_name,
     gamertag,
-    category_id: (formData.get("category_id") as string) || null,
     category_label: category_label || null,
     nationality: String(formData.get("nationality") ?? "").trim() || null,
     number_pref: Number.isFinite(number_pref as number) ? number_pref : null,

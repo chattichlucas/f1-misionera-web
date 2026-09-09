@@ -3,23 +3,27 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { setInscriptionStatus, deleteInscription } from "@/app/admin/actions";
-import type { Inscription } from "@/lib/types";
+import type { Inscription, Category } from "@/lib/types";
 import { formatDateTime } from "@/lib/format";
 
 const STATUSES = ["pendiente", "aceptada", "reserva", "rechazada"] as const;
+const NEEDS_CATEGORY = new Set(["aceptada", "reserva"]);
 
 export function InscriptionRow({
   row,
+  categories,
   editable = true,
   proofUrl,
 }: {
   row: Inscription;
+  categories: Category[];
   editable?: boolean;
   proofUrl?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cat, setCat] = useState(row.category_id ?? "");
 
   async function changeStatus(status: string) {
     setBusy(true);
@@ -27,6 +31,7 @@ export function InscriptionRow({
     const fd = new FormData();
     fd.set("id", row.id);
     fd.set("status", status);
+    if (NEEDS_CATEGORY.has(status)) fd.set("category_id", cat);
     const res = await setInscriptionStatus({}, fd);
     setBusy(false);
     if (res?.error) {
@@ -55,7 +60,6 @@ export function InscriptionRow({
           </p>
           <p className="text-sm text-muted">
             {[
-              row.category_label,
               row.platform,
               row.nationality,
               row.number_pref ? `#${row.number_pref}` : null,
@@ -92,27 +96,40 @@ export function InscriptionRow({
         </div>
       </div>
 
-      {!editable ? null : (
-      <div className="mt-3 flex flex-wrap gap-2">
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            disabled={busy || row.status === s}
-            onClick={() => changeStatus(s)}
-            className="chip font-semibold disabled:opacity-40"
-            style={row.status === s ? { borderColor: "var(--primary)" } : undefined}
+      {editable && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <select
+            value={cat}
+            onChange={(e) => setCat(e.target.value)}
+            className="rounded-lg bg-[var(--panel-2)] px-2 py-1 text-sm outline-none border"
+            style={{ borderColor: cat ? "var(--line)" : "var(--primary)" }}
           >
-            {s}
+            <option value="">Categoría…</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {STATUSES.map((s) => (
+            <button
+              key={s}
+              disabled={busy || row.status === s || (NEEDS_CATEGORY.has(s) && !cat)}
+              onClick={() => changeStatus(s)}
+              className="chip font-semibold disabled:opacity-40"
+              style={row.status === s ? { borderColor: "var(--primary)" } : undefined}
+            >
+              {s}
+            </button>
+          ))}
+          <button
+            onClick={remove}
+            disabled={busy}
+            className="chip font-semibold text-muted hover:text-negative"
+          >
+            eliminar
           </button>
-        ))}
-        <button
-          onClick={remove}
-          disabled={busy}
-          className="chip font-semibold text-muted hover:text-negative"
-        >
-          eliminar
-        </button>
-      </div>
+        </div>
       )}
 
       {error && (

@@ -1,14 +1,10 @@
-import { getCategories, getSettings } from "@/lib/data";
+import { getSettings } from "@/lib/data";
 import { getDict } from "@/lib/i18n-server";
 import { PageHero } from "@/components/ui";
 import { InscriptionForm } from "./form";
 
 export default async function InscripcionesPage() {
-  const [categories, settings, d] = await Promise.all([
-    getCategories(),
-    getSettings(),
-    getDict(),
-  ]);
+  const [settings, d] = await Promise.all([getSettings(), getDict()]);
 
   return (
     <div className="space-y-6">
@@ -18,7 +14,6 @@ export default async function InscripcionesPage() {
 
       <section className="shell">
         <InscriptionForm
-          categories={categories}
           open={settings.inscriptions_open}
           payment={{
             amount: settings.payment_amount,

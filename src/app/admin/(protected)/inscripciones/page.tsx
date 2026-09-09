@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMyPermissions, canView, canEdit } from "@/lib/permissions";
+import { getCategories } from "@/lib/data";
 import { InscriptionRow } from "./row";
 import type { Inscription } from "@/lib/types";
 
@@ -19,10 +20,10 @@ export default async function AdminInscripcionesPage() {
   const editable = canEdit(mp, "inscriptions");
 
   const sb = await createClient();
-  const { data } = await sb
-    .from("inscriptions")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [{ data }, categories] = await Promise.all([
+    sb.from("inscriptions").select("*").order("created_at", { ascending: false }),
+    getCategories(),
+  ]);
 
   const rows = (data ?? []) as Inscription[];
 
@@ -57,7 +58,13 @@ export default async function AdminInscripcionesPage() {
           <p className="panel p-6 text-sm text-muted">No hay inscripciones.</p>
         )}
         {rows.map((r) => (
-          <InscriptionRow key={r.id} row={r} editable={editable} proofUrl={proofUrls[r.id]} />
+          <InscriptionRow
+            key={r.id}
+            row={r}
+            categories={categories}
+            editable={editable}
+            proofUrl={proofUrls[r.id]}
+          />
         ))}
       </div>
     </div>

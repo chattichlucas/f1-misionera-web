@@ -3,7 +3,6 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitInscription, type InscriptionState } from "./actions";
-import type { Category } from "@/lib/types";
 
 const field =
   "w-full rounded-lg bg-[var(--panel-2)] px-3 py-2.5 text-sm outline-none border";
@@ -19,11 +18,9 @@ function SubmitButton() {
 }
 
 export function InscriptionForm({
-  categories,
   open,
   payment,
 }: {
-  categories: Category[];
   open: boolean;
   payment: { amount: string | null; alias: string | null; holder: string | null };
 }) {
@@ -65,17 +62,6 @@ export function InscriptionForm({
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Número preferido</span>
           <input name="number_pref" type="number" min={1} max={99} className={field} style={line} />
-        </label>
-        <label className="block text-sm">
-          <span className="mb-1 block font-semibold">Categoría</span>
-          <select name="category_id" className={field} style={line} defaultValue="">
-            <option value="">Sin preferencia</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
         </label>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Plataforma</span>

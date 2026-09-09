@@ -230,34 +230,49 @@ export async function setInscriptionStatus(
     const sb = await requirePerm("inscriptions", "edit");
     const id = String(formData.get("id"));
     const status = String(formData.get("status"));
+    const chosenCategory = String(formData.get("category_id") || "") || null;
     const { data: insc } = await sb
       .from("inscriptions")
       .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    // Al aceptar / poner en reserva: si ya hay un piloto con ese gamertag o
-    // nombre en la categoría, NO se acepta — hay que resolver el conflicto.
-    if (insc && (status === "aceptada" || status === "reserva") && insc.category_id) {
+    const accepting = status === "aceptada" || status === "reserva";
+    // El admin elige la categoría al aceptar; si no, la que ya tenga la inscripción.
+    const categoryId =
+      chosenCategory || ((insc?.category_id as string | null) ?? null);
+
+    const inscUpdate: Record<string, unknown> = { status };
+
+    if (accepting) {
+      if (!categoryId) {
+        return { error: "Elegí una categoría para aceptar la inscripción." };
+      }
+      inscUpdate.category_id = categoryId;
+
+      // si ya hay un piloto con ese gamertag Y nombre en la categoría, no se acepta
       const conflict = await findDriverConflict(
-        insc.category_id as string,
-        (insc.gamertag as string | null) ?? null,
-        (insc.full_name as string | null) ?? null,
-        (insc.driver_id as string | null) ?? null,
+        categoryId,
+        (insc?.gamertag as string | null) ?? null,
+        (insc?.full_name as string | null) ?? null,
+        (insc?.driver_id as string | null) ?? null,
       );
       if (conflict) {
         return {
-          error: `Ya existe el piloto "${conflict.name}"${conflict.gamertag ? ` (${conflict.gamertag})` : ""} en esa categoría. No se puede aceptar esta inscripción hasta resolver el conflicto: revisá si es la misma persona (borrá esta inscripción) o corregí el gamertag/nombre.`,
+          error: `Ya existe el piloto "${conflict.name}"${conflict.gamertag ? ` (${conflict.gamertag})` : ""} en esa categoría. Revisá si es la misma persona (borrá esta inscripción) o corregí el gamertag/nombre.`,
         };
       }
     }
 
-    const { error } = await sb.from("inscriptions").update({ status }).eq("id", id);
+    const { error } = await sb.from("inscriptions").update(inscUpdate).eq("id", id);
     if (error) return { error: error.message };
 
     let driverNote = "";
-    if (insc && (status === "aceptada" || status === "reserva")) {
-      driverNote = await ensureDriverFromInscription(insc as Record<string, unknown>, status);
+    if (insc && accepting && categoryId) {
+      driverNote = await ensureDriverFromInscription(
+        { ...(insc as Record<string, unknown>), category_id: categoryId },
+        status,
+      );
     }
 
     await logAudit({
