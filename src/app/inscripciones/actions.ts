@@ -2,6 +2,7 @@
 
 import { createClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureBucket } from "@/lib/supabase/storage";
 
 export type InscriptionState = { ok?: boolean; error?: string };
 
@@ -43,9 +44,15 @@ export async function submitInscription(
       const admin = createAdminClient();
       const path = `${crypto.randomUUID()}.${ext}`;
       const buf = Buffer.from(await blob.arrayBuffer());
-      const { error: upErr } = await admin.storage
+      let { error: upErr } = await admin.storage
         .from("comprobantes")
         .upload(path, buf, { contentType: blob.type, upsert: false });
+      if (upErr && /bucket.*not found/i.test(upErr.message)) {
+        await ensureBucket(admin, "comprobantes");
+        ({ error: upErr } = await admin.storage
+          .from("comprobantes")
+          .upload(path, buf, { contentType: blob.type, upsert: false }));
+      }
       if (upErr) return { error: "No se pudo subir el comprobante. Probá de nuevo." };
       payment_proof_path = path;
     } catch {

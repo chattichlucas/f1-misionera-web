@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureBucket } from "@/lib/supabase/storage";
 
 const ALLOWED = new Set([
   "image/png",
@@ -37,9 +38,15 @@ export async function uploadMedia(formData: FormData): Promise<UploadResult> {
     const buf = Buffer.from(await file.arrayBuffer());
 
     const admin = createAdminClient();
-    const { error } = await admin.storage
+    let { error } = await admin.storage
       .from("media")
       .upload(path, buf, { contentType: file.type, upsert: false });
+    if (error && /bucket.*not found/i.test(error.message)) {
+      await ensureBucket(admin, "media");
+      ({ error } = await admin.storage
+        .from("media")
+        .upload(path, buf, { contentType: file.type, upsert: false }));
+    }
     if (error) return { error: error.message };
 
     const { data } = admin.storage.from("media").getPublicUrl(path);
