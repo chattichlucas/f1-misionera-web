@@ -139,7 +139,8 @@ export async function saveSettings(
       "color_muted", "color_primary", "color_primary_fg", "color_accent",
       "color_positive", "color_negative", "discord_url", "instagram_url",
       "youtube_url", "twitch_url", "tiktok_url", "contact_email",
-      "maintenance_message", "payment_info",
+      "maintenance_message",
+      "payment_amount", "payment_alias", "payment_holder",
     ];
     const row: Record<string, unknown> = { id: 1 };
     for (const k of keys) {

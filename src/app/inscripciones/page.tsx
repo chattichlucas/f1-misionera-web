@@ -20,7 +20,11 @@ export default async function InscripcionesPage() {
         <InscriptionForm
           categories={categories}
           open={settings.inscriptions_open}
-          paymentInfo={settings.payment_info}
+          payment={{
+            amount: settings.payment_amount,
+            alias: settings.payment_alias,
+            holder: settings.payment_holder,
+          }}
         />
       </section>
     </div>

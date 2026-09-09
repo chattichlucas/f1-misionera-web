@@ -37,6 +37,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   recalc_enabled: false,
   pole_fl_enabled: true,
   payment_info: null,
+  payment_amount: null,
+  payment_alias: null,
+  payment_holder: null,
   updated_at: new Date(0).toISOString(),
 };
 

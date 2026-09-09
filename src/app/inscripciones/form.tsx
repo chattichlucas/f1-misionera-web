@@ -21,12 +21,13 @@ function SubmitButton() {
 export function InscriptionForm({
   categories,
   open,
-  paymentInfo,
+  payment,
 }: {
   categories: Category[];
   open: boolean;
-  paymentInfo?: string | null;
+  payment: { amount: string | null; alias: string | null; holder: string | null };
 }) {
+  const hasPayment = Boolean(payment.alias || payment.holder || payment.amount);
   const [state, action] = useActionState<InscriptionState, FormData>(submitInscription, {});
 
   if (state.ok) {
@@ -102,15 +103,28 @@ export function InscriptionForm({
       {/* --- PAGO --- */}
       <div className="rounded-xl p-4" style={{ background: "var(--panel-2)", border: "1px solid var(--line)" }}>
         <p className="text-sm font-extrabold">Pago de la inscripción</p>
-        {paymentInfo ? (
+        {hasPayment && (
           <div className="mt-2 rounded-lg p-3 text-sm" style={{ background: "var(--panel)", border: "1px solid var(--line)" }}>
-            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-primary">Transferí a</p>
-            <p className="whitespace-pre-wrap text-muted">{paymentInfo}</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-primary">
+              Datos para transferir el monto de la inscripción
+            </p>
+            <dl className="space-y-1">
+              {payment.amount && (
+                <div className="flex gap-2">
+                  <dt className="font-semibold">Monto:</dt>
+                  <dd className="text-muted">{payment.amount}</dd>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <dt className="font-semibold">ALIAS/CVU:</dt>
+                <dd className="text-muted">{payment.alias || "—"}</dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="font-semibold">Nombre del titular de la cuenta:</dt>
+                <dd className="text-muted">{payment.holder || "—"}</dd>
+              </div>
+            </dl>
           </div>
-        ) : (
-          <p className="mt-1 text-sm text-muted">
-            Consultá los datos para transferir por Discord.
-          </p>
         )}
         <label className="mt-4 block text-sm">
           <span className="mb-1 block font-semibold">Comprobante de transferencia (imagen o PDF, máx 5 MB)</span>

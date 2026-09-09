@@ -75,21 +75,17 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
           <input type="checkbox" name="inscriptions_open" defaultChecked={s.inscriptions_open} className="h-5 w-5" />
           Inscripciones abiertas
         </label>
-        <label className="block text-sm">
-          <span className="mb-1 block font-semibold">Datos para transferir (inscripción)</span>
-          <textarea
-            name="payment_info"
-            rows={4}
-            defaultValue={s.payment_info ?? ""}
-            className={input}
-            style={st}
-            placeholder={"Monto: $X\nAlias: mi.liga.f1\nCVU: 0000003100000000000000\nTitular: Nombre Apellido"}
-          />
-          <span className="mt-1 block text-xs text-muted">
-            Alias / CVU / titular de la cuenta de la liga. El piloto los ve en el formulario
-            y solo sube el comprobante.
-          </span>
-        </label>
+        <div className="rounded-lg border p-3" style={st}>
+          <p className="text-sm font-semibold">Datos para transferir la inscripción</p>
+          <p className="mb-2 text-xs text-muted">
+            Se muestran en el formulario de inscripción; el piloto solo sube el comprobante.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Text name="payment_amount" label="Monto" def={s.payment_amount} help="ej: $5000" />
+            <Text name="payment_alias" label="Alias / CVU" def={s.payment_alias} />
+            <Text name="payment_holder" label="Titular de la cuenta" def={s.payment_holder} />
+          </div>
+        </div>
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Idioma por defecto</span>
           <select

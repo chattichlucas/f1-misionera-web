@@ -32,6 +32,9 @@ export type SiteSettings = {
   recalc_enabled: boolean;
   pole_fl_enabled: boolean;
   payment_info: string | null;
+  payment_amount: string | null;
+  payment_alias: string | null;
+  payment_holder: string | null;
   updated_at: string;
 };
 
