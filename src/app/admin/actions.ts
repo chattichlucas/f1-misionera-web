@@ -253,12 +253,15 @@ async function findDriverConflict(
       .from("drivers")
       .select("id, gamertag, name")
       .eq("category_id", categoryId);
+    if (!g || !n) return null; // hace falta gamertag Y nombre para considerarlo el mismo piloto
     return (
       (data ?? []).find(
         (d) =>
           d.id !== ownDriverId &&
-          ((g && d.gamertag && d.gamertag.trim().toLowerCase() === g) ||
-            (n && d.name && d.name.trim().toLowerCase() === n)),
+          d.gamertag &&
+          d.name &&
+          d.gamertag.trim().toLowerCase() === g &&
+          d.name.trim().toLowerCase() === n,
       ) ?? null
     );
   } catch {
