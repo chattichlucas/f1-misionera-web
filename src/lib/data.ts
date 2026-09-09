@@ -62,6 +62,27 @@ export async function getCircuits(): Promise<Circuit[]> {
   return (data ?? []) as Circuit[];
 }
 
+export async function getCircuit(id: string): Promise<Circuit | null> {
+  if (!hasSupabaseEnv()) return null;
+  const sb = await createClient();
+  const { data } = await sb.from("circuits").select("*").eq("id", id).maybeSingle();
+  return (data ?? null) as Circuit | null;
+}
+
+/** Circuitos con longitud parecida (± 0.6 km), excluyendo el propio. */
+export async function getSimilarCircuits(circuit: Circuit): Promise<Circuit[]> {
+  if (!hasSupabaseEnv() || circuit.length_km == null) return [];
+  const sb = await createClient();
+  const { data } = await sb
+    .from("circuits")
+    .select("*")
+    .neq("id", circuit.id)
+    .gte("length_km", circuit.length_km - 0.6)
+    .lte("length_km", circuit.length_km + 0.6)
+    .order("length_km");
+  return (data ?? []) as Circuit[];
+}
+
 export type RoundWithCircuit = Round & { circuit: Circuit | null; category: Category | null };
 
 export async function getRounds(): Promise<RoundWithCircuit[]> {

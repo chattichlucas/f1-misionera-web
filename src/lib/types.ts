@@ -111,6 +111,12 @@ export type Circuit = {
   map_url: string | null;
   length_km: number | null;
   laps: number | null;
+  turns: number | null;
+  description: string | null;
+  lap_record_time: string | null;
+  lap_record_holder: string | null;
+  lap_record_year: number | null;
+  lap_record_car: string | null;
 };
 
 export type Driver = {

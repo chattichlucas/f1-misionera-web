@@ -46,41 +46,50 @@ export default async function CalendarioPage({
             <EmptyState>{d.pages.calendarEmpty}</EmptyState>
           </Panel>
         )}
-        {filtered.map((r) => {
-          const inner = (
-            <Panel className="h-full p-5 transition hover:border-primary">
-              <div className="flex items-start justify-between">
-                <span className="text-3xl font-black text-muted">
-                  {String(r.round_number).padStart(2, "0")}
-                </span>
-                <span
-                  className="chip"
-                  style={{
-                    borderColor:
-                      r.status === "finalizado" ? "var(--positive)" : "var(--line)",
-                  }}
-                >
-                  {statusLabel[r.status] ?? r.status}
-                </span>
-              </div>
-              <p className="mt-3 text-lg font-extrabold">
+        {filtered.map((r) => (
+          <Panel key={r.id} className="flex h-full flex-col p-5 transition hover:border-primary">
+            <div className="flex items-start justify-between">
+              <span className="text-3xl font-black text-muted">
+                {String(r.round_number).padStart(2, "0")}
+              </span>
+              <span
+                className="chip"
+                style={{
+                  borderColor: r.status === "finalizado" ? "var(--positive)" : "var(--line)",
+                }}
+              >
+                {statusLabel[r.status] ?? r.status}
+              </span>
+            </div>
+
+            {r.circuit_id ? (
+              <Link href={`/circuitos/${r.circuit_id}`} className="mt-3 text-lg font-extrabold hover:text-primary">
                 {flagEmoji(r.circuit?.country_code)} {r.circuit?.name ?? "—"}
-              </p>
-              <p className="text-sm text-muted">
-                {r.category?.name}
-                {r.is_sprint ? ` · ${d.common.sprint}` : ""}
-              </p>
-              <p className="mt-1 text-sm">📅 {formatDateTime(r.race_date)}</p>
-            </Panel>
-          );
-          return r.status === "finalizado" ? (
-            <Link key={r.id} href={`/resultados/${r.id}`}>
-              {inner}
-            </Link>
-          ) : (
-            <div key={r.id}>{inner}</div>
-          );
-        })}
+              </Link>
+            ) : (
+              <p className="mt-3 text-lg font-extrabold">{flagEmoji(r.circuit?.country_code)} —</p>
+            )}
+
+            <p className="text-sm text-muted">
+              {r.category?.name}
+              {r.is_sprint ? ` · ${d.common.sprint}` : ""}
+            </p>
+            <p className="mt-1 text-sm">📅 {formatDateTime(r.race_date)}</p>
+
+            <div className="mt-3 flex flex-wrap gap-3 text-sm font-bold">
+              {r.circuit_id && (
+                <Link href={`/circuitos/${r.circuit_id}`} className="text-primary">
+                  Ver circuito →
+                </Link>
+              )}
+              {r.status === "finalizado" && (
+                <Link href={`/resultados/${r.id}`} className="text-primary">
+                  {d.pages.seeResults} →
+                </Link>
+              )}
+            </div>
+          </Panel>
+        ))}
       </section>
     </div>
   );
