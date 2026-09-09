@@ -17,14 +17,20 @@ export function InscriptionRow({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function changeStatus(status: string) {
     setBusy(true);
+    setError(null);
     const fd = new FormData();
     fd.set("id", row.id);
     fd.set("status", status);
-    await setInscriptionStatus({}, fd);
+    const res = await setInscriptionStatus({}, fd);
     setBusy(false);
+    if (res?.error) {
+      setError(res.error);
+      return;
+    }
     router.refresh();
   }
 
@@ -91,6 +97,15 @@ export function InscriptionRow({
           eliminar
         </button>
       </div>
+      )}
+
+      {error && (
+        <p
+          className="mt-3 rounded-lg p-3 text-sm font-semibold text-negative"
+          style={{ background: "var(--panel-2)", border: "1px solid var(--negative)" }}
+        >
+          {error}
+        </p>
       )}
     </div>
   );

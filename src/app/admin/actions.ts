@@ -199,6 +199,23 @@ export async function setInscriptionStatus(
       .select("*")
       .eq("id", id)
       .maybeSingle();
+
+    // Al aceptar / poner en reserva: si ya hay un piloto con ese gamertag o
+    // nombre en la categoría, NO se acepta — hay que resolver el conflicto.
+    if (insc && (status === "aceptada" || status === "reserva") && insc.category_id) {
+      const conflict = await findDriverConflict(
+        insc.category_id as string,
+        (insc.gamertag as string | null) ?? null,
+        (insc.full_name as string | null) ?? null,
+        (insc.driver_id as string | null) ?? null,
+      );
+      if (conflict) {
+        return {
+          error: `Ya existe el piloto "${conflict.name}"${conflict.gamertag ? ` (${conflict.gamertag})` : ""} en esa categoría. No se puede aceptar esta inscripción hasta resolver el conflicto: revisá si es la misma persona (borrá esta inscripción) o corregí el gamertag/nombre.`,
+        };
+      }
+    }
+
     const { error } = await sb.from("inscriptions").update({ status }).eq("id", id);
     if (error) return { error: error.message };
 
@@ -217,6 +234,35 @@ export async function setInscriptionStatus(
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Error inesperado" };
+  }
+}
+
+/** Devuelve un piloto ya existente en la categoría con el mismo gamertag o nombre
+ *  (ignora el que ya esté vinculado a esta inscripción). */
+async function findDriverConflict(
+  categoryId: string,
+  gamertag: string | null,
+  fullName: string | null,
+  ownDriverId: string | null,
+): Promise<{ id: string; name: string; gamertag: string | null } | null> {
+  try {
+    const admin = createAdminClient();
+    const g = gamertag?.trim().toLowerCase() ?? null;
+    const n = fullName?.trim().toLowerCase() ?? null;
+    const { data } = await admin
+      .from("drivers")
+      .select("id, gamertag, name")
+      .eq("category_id", categoryId);
+    return (
+      (data ?? []).find(
+        (d) =>
+          d.id !== ownDriverId &&
+          ((g && d.gamertag && d.gamertag.trim().toLowerCase() === g) ||
+            (n && d.name && d.name.trim().toLowerCase() === n)),
+      ) ?? null
+    );
+  } catch {
+    return null;
   }
 }
 
@@ -243,27 +289,12 @@ async function ensureDriverFromInscription(
           .from("drivers")
           .update({ seat: status === "reserva" ? "reserva" : "titular" })
           .eq("id", existing.id);
-        return " · piloto ya existía";
+        return " · piloto ya vinculado";
       }
     }
 
     const gamertag = (insc.gamertag as string | null)?.trim() ?? null;
     const fullName = (insc.full_name as string | null)?.trim() ?? null;
-
-    // ¿ya hay un piloto igual en la categoría? (evita duplicados)
-    const { data: dupes } = await admin
-      .from("drivers")
-      .select("id, gamertag, name")
-      .eq("category_id", categoryId);
-    const match = (dupes ?? []).find(
-      (d) =>
-        (gamertag && d.gamertag && d.gamertag.trim().toLowerCase() === gamertag.toLowerCase()) ||
-        (fullName && d.name && d.name.trim().toLowerCase() === fullName.toLowerCase()),
-    );
-    if (match) {
-      await admin.from("inscriptions").update({ driver_id: match.id }).eq("id", inscId);
-      return " · piloto ya existía";
-    }
 
     const { data: created, error } = await admin
       .from("drivers")
