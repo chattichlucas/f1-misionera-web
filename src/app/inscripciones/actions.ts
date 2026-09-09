@@ -65,8 +65,6 @@ export async function submitInscription(
     platform: String(formData.get("platform") ?? "").trim() || null,
     experience: String(formData.get("experience") ?? "").trim() || null,
     notes: String(formData.get("notes") ?? "").trim() || null,
-    payer_alias: String(formData.get("payer_alias") ?? "").trim() || null,
-    payer_name: String(formData.get("payer_name") ?? "").trim() || null,
     payment_proof_path,
     status: "pendiente",
   });

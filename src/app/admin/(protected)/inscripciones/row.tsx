@@ -67,27 +67,15 @@ export function InscriptionRow({
           {row.experience && <p className="mt-1 text-sm">Experiencia: {row.experience}</p>}
           {row.notes && <p className="mt-1 text-sm text-muted">{row.notes}</p>}
 
-          {(row.payer_name || row.payer_alias || row.payment_proof_path) && (
+          {row.payment_proof_path && (
             <div className="mt-2 rounded-lg p-2 text-sm" style={{ background: "var(--panel-2)", border: "1px solid var(--line)" }}>
-              <p className="font-semibold">Pago</p>
-              {(row.payer_name || row.payer_alias) && (
-                <p className="text-muted">
-                  {[row.payer_name, row.payer_alias].filter(Boolean).join(" · ")}
-                </p>
-              )}
-              {row.payment_proof_path && (
-                proofUrl ? (
-                  <a
-                    href={proofUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold text-primary"
-                  >
-                    Ver comprobante →
-                  </a>
-                ) : (
-                  <span className="text-muted">Comprobante adjunto (no se pudo generar el enlace)</span>
-                )
+              <p className="font-semibold">Comprobante de pago</p>
+              {proofUrl ? (
+                <a href={proofUrl} target="_blank" rel="noopener noreferrer" className="font-bold text-primary">
+                  Ver comprobante →
+                </a>
+              ) : (
+                <span className="text-muted">Adjunto (no se pudo generar el enlace)</span>
               )}
             </div>
           )}

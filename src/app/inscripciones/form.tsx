@@ -102,21 +102,18 @@ export function InscriptionForm({
       {/* --- PAGO --- */}
       <div className="rounded-xl p-4" style={{ background: "var(--panel-2)", border: "1px solid var(--line)" }}>
         <p className="text-sm font-extrabold">Pago de la inscripción</p>
-        {paymentInfo && (
-          <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{paymentInfo}</p>
+        {paymentInfo ? (
+          <div className="mt-2 rounded-lg p-3 text-sm" style={{ background: "var(--panel)", border: "1px solid var(--line)" }}>
+            <p className="mb-1 text-xs font-bold uppercase tracking-wide text-primary">Transferí a</p>
+            <p className="whitespace-pre-wrap text-muted">{paymentInfo}</p>
+          </div>
+        ) : (
+          <p className="mt-1 text-sm text-muted">
+            Consultá los datos para transferir por Discord.
+          </p>
         )}
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm">
-            <span className="mb-1 block font-semibold">Alias / CVU desde donde pagaste</span>
-            <input name="payer_alias" className={field} style={line} />
-          </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-semibold">Nombre del titular de la cuenta</span>
-            <input name="payer_name" className={field} style={line} />
-          </label>
-        </div>
         <label className="mt-4 block text-sm">
-          <span className="mb-1 block font-semibold">Comprobante (imagen o PDF, máx 5 MB)</span>
+          <span className="mb-1 block font-semibold">Comprobante de transferencia (imagen o PDF, máx 5 MB)</span>
           <input
             type="file"
             name="payment_proof"
