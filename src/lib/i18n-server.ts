@@ -23,5 +23,5 @@ export async function getLocale(): Promise<Locale> {
 
 export async function getDict(): Promise<Dict> {
   const locale = await getLocale();
-  return dictionaries[locale];
+  return dictionaries[locale] as Dict;
 }

@@ -54,7 +54,8 @@ export default async function AdminResourcePage({
         .from(f.refTable)
         .select(`id, ${f.refLabel ?? "id"}`)
         .limit(500);
-      refOptions[f.name] = (data ?? []).map((r: Record<string, unknown>) => ({
+      const list = ((data ?? []) as unknown as Record<string, unknown>[]);
+      refOptions[f.name] = list.map((r) => ({
         id: String(r.id),
         label: String(r[f.refLabel ?? "id"] ?? r.id),
       }));

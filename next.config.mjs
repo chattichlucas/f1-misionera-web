@@ -7,8 +7,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // TODO: poner en `false` una vez que se pueda correr `npm run typecheck` localmente.
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   experimental: {
     // subida de imágenes vía server action
