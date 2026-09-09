@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 
 type Labels = { d: string; h: string; m: string; s: string; live: string };
+type Diff = { d: number; h: number; m: number; s: number; done: boolean };
 
-function diff(target: number) {
+function diff(target: number): Diff {
   const ms = Math.max(0, target - Date.now());
   return {
     d: Math.floor(ms / 86400000),
@@ -23,7 +24,8 @@ export function Countdown({
   labels?: Labels;
 }) {
   const target = iso ? new Date(iso).getTime() : NaN;
-  const [t, setT] = useState(() => (Number.isNaN(target) ? null : diff(target)));
+  // Empieza en null en server y cliente (mismo HTML) → sin hydration mismatch.
+  const [t, setT] = useState<Diff | null>(null);
 
   useEffect(() => {
     if (Number.isNaN(target)) return;
@@ -32,27 +34,26 @@ export function Countdown({
     return () => clearInterval(id);
   }, [target]);
 
-  if (!t) return null;
-  if (t.done) return <p className="text-sm font-bold text-primary">{labels.live}</p>;
-
-  const box = (value: number, label: string) => (
+  const box = (value: number | null, label: string) => (
     <div
       className="rounded-lg px-3 py-2 text-center"
       style={{ background: "var(--panel-2)", border: "1px solid var(--line)" }}
     >
       <div className="text-xl font-extrabold tabular-nums">
-        {String(value).padStart(2, "0")}
+        {value == null ? "--" : String(value).padStart(2, "0")}
       </div>
       <div className="text-[10px] uppercase tracking-wider text-muted">{label}</div>
     </div>
   );
 
+  if (t?.done) return <p className="text-sm font-bold text-primary">{labels.live}</p>;
+
   return (
     <div className="grid grid-cols-4 gap-2">
-      {box(t.d, labels.d)}
-      {box(t.h, labels.h)}
-      {box(t.m, labels.m)}
-      {box(t.s, labels.s)}
+      {box(t?.d ?? null, labels.d)}
+      {box(t?.h ?? null, labels.h)}
+      {box(t?.m ?? null, labels.m)}
+      {box(t?.s ?? null, labels.s)}
     </div>
   );
 }
