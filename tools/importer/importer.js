@@ -192,14 +192,41 @@ async function upload(classification) {
   }
 }
 
+const DEBUG = ARGS.debug === "true" || ARGS.debug === "1";
+
 // ---------- socket -------------------------------------------------
 const sock = dgram.createSocket("udp4");
+
+let pktCount = 0;
+let firstPacketLogged = false;
+const seenIds = new Set();
+
+// Heartbeat: cada 15s avisa si está recibiendo pero todavía no hubo carrera.
+setInterval(() => {
+  if (pktCount === 0) {
+    console.log("… todavía no llegó ningún paquete UDP. Revisá: telemetría UDP ON, puerto 20777, modo difusión ON, y el firewall.");
+  } else if (!posted.size) {
+    console.log(
+      `… recibiendo (${pktCount} paquetes${sawParticipants ? `, ${Object.keys(participants).length} pilotos en sesión` : ""}). Esperando el fin de la carrera.`,
+    );
+  }
+}, 15000);
 
 sock.on("message", (buf) => {
   if (buf.length < HEADER) return;
   const format = buf.readUInt16LE(0);
   const packetId = buf.readUInt8(6);
   const sessionUID = buf.readBigUInt64LE(7).toString();
+
+  pktCount++;
+  if (!firstPacketLogged) {
+    firstPacketLogged = true;
+    console.log(`✓ Recibiendo telemetría · formato ${format}`);
+  }
+  if (DEBUG && !seenIds.has(packetId)) {
+    seenIds.add(packetId);
+    console.log(`  [debug] primer paquete id=${packetId} (${buf.length} bytes)`);
+  }
 
   if (format !== 2025 && format !== 2024 && format !== 2023) {
     if (!sock._warnedFormat) {
@@ -247,9 +274,20 @@ sock.on("message", (buf) => {
   }
 });
 
+// --test : manda una clasificación de prueba (2 pilotos) para verificar el endpoint.
+if (ARGS.test === "true" || ARGS.test === "1") {
+  console.log("Modo prueba: enviando 2 pilotos ficticios…");
+  upload([
+    { carIndex: 0, position: 1, grid: 1, points: 25, result_status: 3, best_lap_ms: 90000, total_race_time_s: 3600, penalties_time_s: 0 },
+    { carIndex: 1, position: 2, grid: 2, points: 18, result_status: 3, best_lap_ms: 90500, total_race_time_s: 3605, penalties_time_s: 0 },
+  ]).then(() => process.exit(0));
+} else {
+
 sock.on("error", (e) => die("socket: " + e.message));
 sock.bind(PORT, HOST, () => {
   console.log(`▶ Escuchando telemetría F1 25 en ${HOST}:${PORT}`);
   console.log(`  Destino: ${SITE_URL}  ·  ${ROUND_ID ? `round_id ${ROUND_ID}` : `ronda ${ROUND} / ${CATEGORY}`}  ·  sesión ${SESSION}`);
   console.log("  Dejalo abierto durante la carrera. Sube solo al aparecer la clasificación final.\n");
 });
+
+} // fin del else (modo normal)
