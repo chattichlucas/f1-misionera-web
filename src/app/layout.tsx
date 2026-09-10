@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { getSettings } from "@/lib/data";
+import { getSettings, getRoundsToday } from "@/lib/data";
 import { settingsToCssVars } from "@/lib/settings";
 import { getDict, getLocale } from "@/lib/i18n-server";
+import { flagEmoji, formatTime, argDateKey } from "@/lib/format";
 import { SiteHeader, type NavItem } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AuthHashRedirect } from "@/components/auth-hash-redirect";
+import { RaceDayPopup } from "@/components/race-day-popup";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
@@ -22,10 +24,11 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [settings, dict, locale] = await Promise.all([
+  const [settings, dict, locale, roundsToday] = await Promise.all([
     getSettings(),
     getDict(),
     getLocale(),
+    getRoundsToday(),
   ]);
   const cssVars = settingsToCssVars(settings) as React.CSSProperties;
 
@@ -46,6 +49,21 @@ export default async function RootLayout({
     <html lang={locale} style={cssVars}>
       <body>
         <AuthHashRedirect />
+        {roundsToday.length > 0 && (
+          <RaceDayPopup
+            dateKey={argDateKey(new Date())}
+            title={dict.pages.raceToday}
+            youtube={settings.youtube_url}
+            tiktok={settings.tiktok_url}
+            twitch={settings.twitch_url}
+            circuits={roundsToday.map((r) => ({
+              name: r.circuit?.name ?? "—",
+              flag: flagEmoji(r.circuit?.country_code),
+              category: r.category?.name ?? null,
+              time: formatTime(r.race_date),
+            }))}
+          />
+        )}
         <div className="flex min-h-dvh flex-col">
           <SiteHeader settings={settings} nav={nav} locale={locale} />
           <main className="flex-1 py-6 sm:py-10">{children}</main>

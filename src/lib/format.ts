@@ -26,6 +26,17 @@ export function formatDateTime(value: string | null | undefined): string {
   }).format(d);
 }
 
+export function formatTime(value: string | null | undefined): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: TZ,
+  }).format(d);
+}
+
 export function formatWeekday(value: string | null | undefined): string {
   if (!value) return "";
   const d = new Date(value);
@@ -53,6 +64,13 @@ export function argDatetimeLocalValue(value: string | null | undefined): string 
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return new Date(d.getTime() - ARG_OFFSET_MS).toISOString().slice(0, 16);
+}
+
+/** instante ISO → "YYYY-MM-DD" en hora de Argentina. */
+export function argDateKey(value: string | Date | null | undefined): string {
+  const d = value instanceof Date ? value : value ? new Date(value) : null;
+  if (!d || Number.isNaN(d.getTime())) return "";
+  return new Date(d.getTime() - ARG_OFFSET_MS).toISOString().slice(0, 10);
 }
 
 /** "YYYY-MM-DDTHH:mm" (hora de Argentina) → instante ISO UTC. */

@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { createClient, hasSupabaseEnv } from "@/lib/supabase/server";
 import { DEFAULT_SETTINGS } from "@/lib/settings";
+import { argDateKey } from "@/lib/format";
 import type {
   Category,
   Circuit,
@@ -93,6 +94,14 @@ export async function getRounds(): Promise<RoundWithCircuit[]> {
     .select("*, circuit:circuits(*), category:categories(*)")
     .order("round_number");
   return (data ?? []) as RoundWithCircuit[];
+}
+
+export async function getRoundsToday(): Promise<RoundWithCircuit[]> {
+  const rounds = await getRounds();
+  const today = argDateKey(new Date());
+  return rounds.filter(
+    (r) => r.race_date && argDateKey(r.race_date) === today && r.status !== "cancelado",
+  );
 }
 
 export async function getNextRound(): Promise<RoundWithCircuit | null> {
