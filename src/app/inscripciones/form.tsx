@@ -32,7 +32,8 @@ export function InscriptionForm({
       <div className="panel p-6 text-sm">
         <p className="text-base font-extrabold text-positive">¡Inscripción enviada!</p>
         <p className="mt-1 text-muted">
-          La organización va a revisar tu solicitud y el comprobante, y te va a contactar por Discord.
+          La organización va a revisar tu solicitud y el comprobante, y te va a contactar
+          por Discord o WhatsApp.
         </p>
       </div>
     );
@@ -72,14 +73,22 @@ export function InscriptionForm({
           </select>
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block font-semibold">Discord</span>
-          <input name="discord" className={field} style={line} />
+          <span className="mb-1 block font-semibold">Discord *</span>
+          <input name="discord" required placeholder="usuario#0000 o usuario" className={field} style={line} />
         </label>
         <label className="block text-sm">
+          <span className="mb-1 block font-semibold">WhatsApp *</span>
+          <input name="whatsapp" required placeholder="+54 9 376 ..." className={field} style={line} />
+        </label>
+        <label className="block text-sm sm:col-span-2">
           <span className="mb-1 block font-semibold">Experiencia previa</span>
           <input name="experience" className={field} style={line} />
         </label>
       </div>
+
+      <p className="text-xs text-muted">
+        Usamos Discord y WhatsApp solo para contactarte por la inscripción.
+      </p>
 
       <label className="block text-sm">
         <span className="mb-1 block font-semibold">Notas</span>

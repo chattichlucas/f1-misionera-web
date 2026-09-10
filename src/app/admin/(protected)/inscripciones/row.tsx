@@ -63,7 +63,8 @@ export function InscriptionRow({
               row.platform,
               row.nationality,
               row.number_pref ? `#${row.number_pref}` : null,
-              row.discord,
+              row.discord ? `Discord: ${row.discord}` : null,
+              row.whatsapp ? `WhatsApp: ${row.whatsapp}` : null,
             ]
               .filter(Boolean)
               .join(" · ")}

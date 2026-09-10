@@ -25,8 +25,14 @@ export async function submitInscription(
   const gamertag = String(formData.get("gamertag") ?? "").trim();
   const category_label = String(formData.get("category_label") ?? "").trim();
 
+  const discord = String(formData.get("discord") ?? "").trim();
+  const whatsapp = String(formData.get("whatsapp") ?? "").trim();
+
   if (!full_name || !gamertag) {
     return { error: "Nombre y gamertag son obligatorios." };
+  }
+  if (!discord || !whatsapp) {
+    return { error: "Discord y WhatsApp son obligatorios para poder contactarte." };
   }
 
   const numberRaw = String(formData.get("number_pref") ?? "").trim();
@@ -67,7 +73,8 @@ export async function submitInscription(
     category_label: category_label || null,
     nationality: String(formData.get("nationality") ?? "").trim() || null,
     number_pref: Number.isFinite(number_pref as number) ? number_pref : null,
-    discord: String(formData.get("discord") ?? "").trim() || null,
+    discord: discord || null,
+    whatsapp: whatsapp || null,
     platform: String(formData.get("platform") ?? "").trim() || null,
     experience: String(formData.get("experience") ?? "").trim() || null,
     notes: String(formData.get("notes") ?? "").trim() || null,

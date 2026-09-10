@@ -210,6 +210,7 @@ export type Inscription = {
   number_pref: number | null;
   gamertag: string | null;
   discord: string | null;
+  whatsapp: string | null;
   platform: string | null;
   experience: string | null;
   notes: string | null;
