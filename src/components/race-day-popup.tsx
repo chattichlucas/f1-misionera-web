@@ -53,42 +53,32 @@ export function RaceDayPopup(props: RaceDay) {
       <div
         role="dialog"
         aria-label="Día de carrera"
-        className="pointer-events-auto w-full max-w-[340px] overflow-hidden rounded-[26px] transition-all duration-300"
+        className="pointer-events-auto w-full max-w-[460px] overflow-hidden rounded-3xl p-5 transition-all duration-300"
         style={{
           background:
             "linear-gradient(180deg, color-mix(in srgb, var(--primary) 12%, var(--panel)) 0%, var(--panel-2) 55%)",
-          border: "1px solid color-mix(in srgb, var(--primary) 45%, var(--line))",
+          border: "1px solid color-mix(in srgb, var(--primary) 40%, var(--line))",
           boxShadow:
-            "0 24px 70px -12px color-mix(in srgb, var(--primary) 40%, transparent), 0 8px 30px rgba(0,0,0,.4)",
-          transform: enter ? "translateY(0) scale(1)" : "translateY(16px) scale(.96)",
+            "0 24px 70px -12px color-mix(in srgb, var(--primary) 38%, transparent), 0 8px 30px rgba(0,0,0,.4)",
+          transform: enter ? "translateY(0) scale(1)" : "translateY(16px) scale(.97)",
           opacity: enter ? 1 : 0,
         }}
       >
-        {/* barra a cuadros */}
-        <div
-          className="h-1.5 w-full"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, var(--primary) 0 8px, var(--primary-fg) 8px 16px)",
-            opacity: 0.85,
-          }}
-        />
+        <div className="flex items-center justify-between">
+          <p className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-primary">
+            <span className="text-sm">🏁</span> {props.title}
+          </p>
+          <button
+            onClick={close}
+            aria-label="Cerrar"
+            className="grid h-7 w-7 place-items-center rounded-full text-muted transition hover:bg-[var(--panel)] hover:text-text"
+          >
+            ✕
+          </button>
+        </div>
 
-        <div className="p-5 pt-4">
-          <div className="flex items-center justify-between">
-            <p className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-primary">
-              <span className="text-sm">🏁</span> {props.title}
-            </p>
-            <button
-              onClick={close}
-              aria-label="Cerrar"
-              className="grid h-7 w-7 place-items-center rounded-full text-muted transition hover:bg-[var(--panel)] hover:text-text"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="mt-2 space-y-2">
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+          <div className="space-y-2">
             {props.circuits.map((c, i) => (
               <div key={i}>
                 <p className="text-2xl font-black leading-tight tracking-tight">
@@ -102,7 +92,7 @@ export function RaceDayPopup(props: RaceDay) {
           </div>
 
           {links.some(([, u]) => u) && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
               {links
                 .filter(([, u]) => Boolean(u))
                 .map(([label, u]) => (
