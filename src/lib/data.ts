@@ -86,7 +86,7 @@ export async function getSimilarCircuits(circuit: Circuit): Promise<Circuit[]> {
 
 export type RoundWithCircuit = Round & { circuit: Circuit | null; category: Category | null };
 
-export async function getRounds(): Promise<RoundWithCircuit[]> {
+export const getRounds = cache(async (): Promise<RoundWithCircuit[]> => {
   if (!hasSupabaseEnv()) return [];
   const sb = await createClient();
   const { data } = await sb
@@ -94,7 +94,7 @@ export async function getRounds(): Promise<RoundWithCircuit[]> {
     .select("*, circuit:circuits(*), category:categories(*)")
     .order("round_number");
   return (data ?? []) as RoundWithCircuit[];
-}
+});
 
 export async function getRoundsToday(): Promise<RoundWithCircuit[]> {
   const rounds = await getRounds();
