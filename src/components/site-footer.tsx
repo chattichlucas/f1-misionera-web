@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { SiteSettings } from "@/lib/types";
 import { getSponsors } from "@/lib/data";
 import { SponsorStrip } from "@/components/sponsors";
+import { SocialIcon } from "@/components/social-icon";
 
 export async function SiteFooter({
   settings,
@@ -40,7 +41,7 @@ export async function SiteFooter({
           <p className="text-sm text-muted">{settings.tagline}</p>
         </div>
 
-        <div className="flex flex-wrap gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-sm">
           {socials
             .filter(([, url]) => Boolean(url))
             .map(([label, url]) => (
@@ -49,9 +50,12 @@ export async function SiteFooter({
                 href={url as string}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="chip hover:border-primary"
+                title={label}
+                aria-label={label}
+                className="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:text-text"
+                style={{ border: "1px solid var(--line)" }}
               >
-                {label}
+                <SocialIcon network={label} className="h-[18px] w-[18px]" />
               </a>
             ))}
           {settings.contact_email && (

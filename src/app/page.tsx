@@ -11,6 +11,7 @@ import {
 import { getDict } from "@/lib/i18n-server";
 import { Countdown } from "@/components/countdown";
 import { SponsorsBlock } from "@/components/sponsors";
+import { SocialIcon } from "@/components/social-icon";
 import { Panel, PanelTitle, EmptyState, TeamChip } from "@/components/ui";
 import { flagEmoji, formatDateTime } from "@/lib/format";
 
@@ -63,22 +64,30 @@ export default async function HomePage() {
               {d.common.viewChampionship}
             </Link>
           </div>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm">
-            {settings.discord_url && (
-              <a href={settings.discord_url} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-text">
-                Discord
-              </a>
-            )}
-            {settings.instagram_url && (
-              <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-text">
-                Instagram
-              </a>
-            )}
-            {settings.youtube_url && (
-              <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="text-muted hover:text-text">
-                YouTube
-              </a>
-            )}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {(
+              [
+                ["Discord", settings.discord_url],
+                ["Instagram", settings.instagram_url],
+                ["YouTube", settings.youtube_url],
+                ["Twitch", settings.twitch_url],
+                ["TikTok", settings.tiktok_url],
+              ] as Array<[string, string | null]>
+            )
+              .filter(([, u]) => Boolean(u))
+              .map(([label, u]) => (
+                <a
+                  key={label}
+                  href={u as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={label}
+                  aria-label={label}
+                  className="text-muted transition hover:text-text"
+                >
+                  <SocialIcon network={label} className="h-5 w-5" />
+                </a>
+              ))}
           </div>
         </div>
 

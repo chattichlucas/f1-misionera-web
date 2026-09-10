@@ -1,6 +1,7 @@
 import { getOrganizers, getSettings } from "@/lib/data";
 import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
+import { SocialIcon } from "@/components/social-icon";
 
 export const revalidate = 60;
 
@@ -72,6 +73,7 @@ export default async function ContactoPage() {
                   rel="noopener noreferrer"
                   className="chip hover:border-primary"
                 >
+                  <SocialIcon network={label} className="h-4 w-4" />
                   {label}
                 </a>
               ))}
