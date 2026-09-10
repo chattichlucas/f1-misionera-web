@@ -36,6 +36,7 @@ export type SiteSettings = {
   payment_alias: string | null;
   payment_holder: string | null;
   blocked_driver_numbers: string | null;
+  raceday_message: string | null;
   updated_at: string;
 };
 

@@ -93,6 +93,12 @@ export function SettingsForm({ settings: s }: { settings: SiteSettings }) {
           def={s.blocked_driver_numbers}
           help="Separados por coma. No se van a poder asignar. ej: 1, 17"
         />
+        <Text
+          name="raceday_message"
+          label="Texto del popup de día de carrera"
+          def={s.raceday_message}
+          help='Se muestra en mayúsculas arriba del circuito. Por defecto: "Hoy se corre en"'
+        />
         <label className="block text-sm">
           <span className="mb-1 block font-semibold">Idioma por defecto</span>
           <select

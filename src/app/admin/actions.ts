@@ -175,7 +175,7 @@ export async function saveSettings(
       "youtube_url", "twitch_url", "tiktok_url", "contact_email",
       "maintenance_message",
       "payment_amount", "payment_alias", "payment_holder",
-      "blocked_driver_numbers",
+      "blocked_driver_numbers", "raceday_message",
     ];
     const row: Record<string, unknown> = { id: 1 };
     for (const k of keys) {

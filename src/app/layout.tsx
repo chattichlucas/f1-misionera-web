@@ -52,7 +52,7 @@ export default async function RootLayout({
         {roundsToday.length > 0 && (
           <RaceDayPopup
             dateKey={argDateKey(new Date())}
-            title={dict.pages.raceToday}
+            title={settings.raceday_message?.trim() || dict.pages.raceToday}
             youtube={settings.youtube_url}
             tiktok={settings.tiktok_url}
             twitch={settings.twitch_url}

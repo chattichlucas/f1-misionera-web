@@ -41,6 +41,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   payment_alias: null,
   payment_holder: null,
   blocked_driver_numbers: "1, 17",
+  raceday_message: null,
   updated_at: new Date(0).toISOString(),
 };
 
