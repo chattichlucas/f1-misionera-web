@@ -16,7 +16,7 @@
  */
 
 import dgram from "node:dgram";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -140,10 +140,15 @@ function parseFinalClassification(buf) {
 let participants = {};
 let lastSessionUID = null;
 let posted = new Set();
+let savedSessions = new Set();
+let uploading = false;
+let lastSavedFile = null;
 let sawParticipants = false;
 
-// ---------- POST ----------------------------------------------------
-async function upload(classification) {
+const SAVE_DIR = join(HERE, "saved");
+
+/** Arma el body a partir de la clasificación parseada. */
+function buildBody(classification) {
   const results = classification.map((c) => {
     const p = participants[c.carIndex] || {};
     const r = {
@@ -159,15 +164,32 @@ async function upload(classification) {
     if (c.result_status === 3 && c.total_race_time_s) r.total_race_time_s = c.total_race_time_s;
     return r;
   });
-
   const body = { session: SESSION, results, force: FORCE };
   if (ROUND_ID) body.round_id = ROUND_ID;
   else {
     body.round = ROUND;
     body.category = CATEGORY;
   }
+  return body;
+}
 
-  console.log(`\n⇪ Subiendo ${results.length} pilotos a ${SITE_URL}/api/import/classification …`);
+/** Guarda el body en disco. Devuelve la ruta del archivo. */
+function saveBody(body, tag) {
+  try {
+    mkdirSync(SAVE_DIR, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const file = join(SAVE_DIR, `carrera-${stamp}-${tag}.json`);
+    writeFileSync(file, JSON.stringify(body, null, 2));
+    return file;
+  } catch (e) {
+    console.error("✖ No se pudo guardar en disco:", e?.message);
+    return null;
+  }
+}
+
+// ---------- POST ----------------------------------------------------
+async function postBody(body) {
+  console.log(`\n⇪ Subiendo ${body.results.length} pilotos a ${SITE_URL}/api/import/classification …`);
   try {
     const res = await fetch(`${SITE_URL}/api/import/classification`, {
       method: "POST",
@@ -180,17 +202,21 @@ async function upload(classification) {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       console.error(`✖ ${res.status}: ${json.error || res.statusText}`);
+      if (res.status === 401) console.error("  (revisá que IMPORT_TOKEN coincida entre el .env del importador y el del servidor)");
       if (res.status === 409) console.error("  (mandá --force para pisar una fecha ya finalizada)");
-      return;
+      return false;
     }
     console.log(`✅ Importado · ${json.imported} guardados · ${json.matched?.length ?? 0} matcheados`);
     if (json.unmatched?.length) {
       console.warn(`⚠ Sin coincidencia (revisá gamertag/número en la parrilla): ${json.unmatched.join(", ")}`);
     }
+    return true;
   } catch (e) {
     console.error("✖ Error de red: " + (e?.message || e));
+    return false;
   }
 }
+
 
 const DEBUG = ARGS.debug === "true" || ARGS.debug === "1";
 
@@ -255,39 +281,72 @@ sock.on("message", (buf) => {
   }
 
   if (packetId === 8) {
-    if (posted.has(sessionUID)) return;
-    posted.add(sessionUID);
+    if (posted.has(sessionUID)) return; // ya subido OK
+    if (uploading) return; // intento en curso
+    let body;
     try {
       const cls = parseFinalClassification(buf);
-      console.log(`\n🏁 Clasificación final (${cls.length} autos)`);
-      for (const c of cls.slice().sort((a, b) => a.position - b.position)) {
-        const p = participants[c.carIndex] || {};
-        console.log(
-          `  P${String(c.position).padStart(2)} · #${String(p.number ?? "?").padStart(2)} ${p.name || "(oculto)"}`,
-        );
+      body = buildBody(cls);
+      if (!savedSessions.has(sessionUID)) {
+        savedSessions.add(sessionUID);
+        console.log(`\n🏁 Clasificación final (${cls.length} autos)`);
+        for (const c of cls.slice().sort((a, b) => a.position - b.position)) {
+          const p = participants[c.carIndex] || {};
+          console.log(
+            `  P${String(c.position).padStart(2)} · #${String(p.number ?? "?").padStart(2)} ${p.name || "(oculto)"}`,
+          );
+        }
+        lastSavedFile = saveBody(body, sessionUID.slice(-6));
+        if (lastSavedFile) console.log(`💾 Guardado en ${lastSavedFile}`);
       }
-      upload(cls);
     } catch (e) {
       console.error("parseFinalClassification:", e?.message);
-      posted.delete(sessionUID);
+      return;
     }
+    uploading = true;
+    postBody(body).then((ok) => {
+      uploading = false;
+      if (ok) posted.add(sessionUID);
+      else if (lastSavedFile) {
+        console.warn(
+          `⚠ No subió. Reintentá luego con:\n  node importer.js --resend "${lastSavedFile}" --round ${ROUND ?? "N"} --category ${CATEGORY ?? "slug"}`,
+        );
+      }
+    });
   }
 });
 
+// --resend <archivo> : re-sube una carrera guardada en disco.
+if (ARGS.resend) {
+  let body;
+  try {
+    body = JSON.parse(readFileSync(ARGS.resend, "utf8"));
+  } catch (e) {
+    die("No pude leer el archivo: " + e.message);
+  }
+  if (ROUND) body.round = ROUND;
+  if (CATEGORY) body.category = CATEGORY;
+  if (ROUND_ID) body.round_id = ROUND_ID;
+  if (ARGS.session) body.session = SESSION;
+  if (FORCE) body.force = true;
+  console.log(`Re-enviando ${ARGS.resend} …`);
+  postBody(body).then((ok) => process.exit(ok ? 0 : 1));
+}
 // --test : manda una clasificación de prueba (2 pilotos) para verificar el endpoint.
-if (ARGS.test === "true" || ARGS.test === "1") {
+else if (ARGS.test === "true" || ARGS.test === "1") {
   console.log("Modo prueba: enviando 2 pilotos ficticios…");
-  upload([
+  const body = buildBody([
     { carIndex: 0, position: 1, grid: 1, points: 25, result_status: 3, best_lap_ms: 90000, total_race_time_s: 3600, penalties_time_s: 0 },
     { carIndex: 1, position: 2, grid: 2, points: 18, result_status: 3, best_lap_ms: 90500, total_race_time_s: 3605, penalties_time_s: 0 },
-  ]).then(() => process.exit(0));
-} else {
-
-sock.on("error", (e) => die("socket: " + e.message));
-sock.bind(PORT, HOST, () => {
-  console.log(`▶ Escuchando telemetría F1 25 en ${HOST}:${PORT}`);
-  console.log(`  Destino: ${SITE_URL}  ·  ${ROUND_ID ? `round_id ${ROUND_ID}` : `ronda ${ROUND} / ${CATEGORY}`}  ·  sesión ${SESSION}`);
-  console.log("  Dejalo abierto durante la carrera. Sube solo al aparecer la clasificación final.\n");
-});
-
-} // fin del else (modo normal)
+  ]);
+  postBody(body).then((ok) => process.exit(ok ? 0 : 1));
+}
+// modo normal: escuchar UDP
+else {
+  sock.on("error", (e) => die("socket: " + e.message));
+  sock.bind(PORT, HOST, () => {
+    console.log(`▶ Escuchando telemetría F1 25 en ${HOST}:${PORT}`);
+    console.log(`  Destino: ${SITE_URL}  ·  ${ROUND_ID ? `round_id ${ROUND_ID}` : `ronda ${ROUND} / ${CATEGORY}`}  ·  sesión ${SESSION}`);
+    console.log("  Dejalo abierto durante la carrera. Cada carrera se guarda en ./saved/ y se sube.\n");
+  });
+}

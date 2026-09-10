@@ -30,3 +30,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# importer
+/tools/importer/saved/
+/tools/importer/.env
