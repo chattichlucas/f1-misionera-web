@@ -71,9 +71,15 @@ export default async function RoundResultPage({
                           {r.dnf ? "DNF" : r.dsq ? "DSQ" : ordinal(r.position)}
                         </td>
                         <td>
-                          <span className="font-semibold">
-                            {flagEmoji(r.driver?.country_code)} {r.driver?.name ?? "—"}
-                          </span>
+                          {r.driver_id ? (
+                            <Link href={`/pilotos/${r.driver_id}`} className="font-semibold hover:text-primary">
+                              {flagEmoji(r.driver?.country_code)} {r.driver?.name ?? "—"}
+                            </Link>
+                          ) : (
+                            <span className="font-semibold">
+                              {flagEmoji(r.driver?.country_code)} {r.driver?.name ?? "—"}
+                            </span>
+                          )}
                           {poleFl && r.pole && <span className="ml-2 chip text-[10px]">POLE</span>}
                           {poleFl && r.fastest_lap && (
                             <span className="ml-1 chip text-[10px]">{d.common.fl}</span>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getCategories, getDrivers, getTeams } from "@/lib/data";
 import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, EmptyState, TeamChip } from "@/components/ui";
@@ -52,25 +53,27 @@ export default async function PilotosPage({
         {filtered.map((dr) => {
           const team = dr.team_id ? teamById.get(dr.team_id) : undefined;
           return (
-            <Panel key={dr.id} className="p-5">
-              <div
-                className="h-1 w-12 rounded-full"
-                style={{ background: team?.color ?? "var(--primary)" }}
-              />
-              <div className="mt-3 flex items-baseline justify-between">
-                <p className="text-lg font-extrabold">
-                  {flagEmoji(dr.country_code)} {dr.name}
-                </p>
-                {dr.number != null && (
-                  <span className="text-2xl font-black text-muted">{dr.number}</span>
-                )}
-              </div>
-              {dr.gamertag && <p className="text-sm text-muted">{dr.gamertag}</p>}
-              <div className="mt-3 flex items-center justify-between">
-                <TeamChip name={team?.name ?? null} color={team?.color} color2={team?.color2} />
-                <span className="chip text-[10px] uppercase">{seatLabel[dr.seat] ?? dr.seat}</span>
-              </div>
-            </Panel>
+            <Link key={dr.id} href={`/pilotos/${dr.id}`}>
+              <Panel className="h-full p-5 transition hover:border-primary">
+                <div
+                  className="h-1 w-12 rounded-full"
+                  style={{ background: team?.color ?? "var(--primary)" }}
+                />
+                <div className="mt-3 flex items-baseline justify-between">
+                  <p className="text-lg font-extrabold">
+                    {flagEmoji(dr.country_code)} {dr.name}
+                  </p>
+                  {dr.number != null && (
+                    <span className="text-2xl font-black text-muted">{dr.number}</span>
+                  )}
+                </div>
+                {dr.gamertag && <p className="text-sm text-muted">{dr.gamertag}</p>}
+                <div className="mt-3 flex items-center justify-between">
+                  <TeamChip name={team?.name ?? null} color={team?.color} color2={team?.color2} />
+                  <span className="chip text-[10px] uppercase">{seatLabel[dr.seat] ?? dr.seat}</span>
+                </div>
+              </Panel>
+            </Link>
           );
         })}
       </section>

@@ -56,6 +56,40 @@ export async function getDrivers(): Promise<Driver[]> {
   return (data ?? []) as Driver[];
 }
 
+export async function getDriver(id: string): Promise<Driver | null> {
+  if (!hasSupabaseEnv()) return null;
+  const sb = await createClient();
+  const { data } = await sb.from("drivers").select("*").eq("id", id).maybeSingle();
+  return (data ?? null) as Driver | null;
+}
+
+/** Compañeros de equipo (misma escudería y categoría), sin incluirlo a él. */
+export async function getTeammates(driver: Driver): Promise<Driver[]> {
+  if (!hasSupabaseEnv() || !driver.team_id) return [];
+  const sb = await createClient();
+  const { data } = await sb
+    .from("drivers")
+    .select("*")
+    .eq("team_id", driver.team_id)
+    .eq("category_id", driver.category_id)
+    .neq("id", driver.id);
+  return (data ?? []) as Driver[];
+}
+
+export type DriverResultRow = SessionResult & { round: RoundWithCircuit | null };
+
+/** Resultados de un piloto, de más reciente a más antiguo. */
+export async function getDriverResults(driverId: string): Promise<DriverResultRow[]> {
+  if (!hasSupabaseEnv()) return [];
+  const sb = await createClient();
+  const { data } = await sb
+    .from("session_results")
+    .select("*, round:rounds(*, circuit:circuits(*), category:categories(*))")
+    .eq("driver_id", driverId);
+  const rows = (data ?? []) as DriverResultRow[];
+  return rows.sort((a, b) => (b.round?.round_number ?? 0) - (a.round?.round_number ?? 0));
+}
+
 export async function getCircuits(): Promise<Circuit[]> {
   if (!hasSupabaseEnv()) return [];
   const sb = await createClient();

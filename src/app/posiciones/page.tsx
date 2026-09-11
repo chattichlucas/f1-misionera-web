@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getCategories, getDriverStandings, getSettings, getTeamStandings } from "@/lib/data";
 import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, PanelTitle, EmptyState, TeamChip } from "@/components/ui";
@@ -65,9 +66,9 @@ export default async function PosicionesPage({
                         <span className={`rank-badge ${i < 3 ? `r${i + 1}` : ""}`}>{i + 1}</span>
                       </td>
                       <td>
-                        <span className="font-semibold">
+                        <Link href={`/pilotos/${row.driver_id}`} className="font-semibold hover:text-primary">
                           {flagEmoji(row.country_code)} {row.name}
-                        </span>
+                        </Link>
                         {row.number != null && (
                           <span className="ml-1 text-xs text-muted">#{row.number}</span>
                         )}

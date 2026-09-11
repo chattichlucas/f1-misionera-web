@@ -177,9 +177,9 @@ export default async function HomePage() {
                   <tr key={row.driver_id}>
                     <td className="w-8 font-bold text-muted">{i + 1}</td>
                     <td>
-                      <span className="font-semibold">
+                      <Link href={`/pilotos/${row.driver_id}`} className="font-semibold hover:text-primary">
                         {flagEmoji(row.country_code)} {row.name}
-                      </span>
+                      </Link>
                     </td>
                     <td className="hidden sm:table-cell">
                       <TeamChip name={row.team_name} color={row.team_color} color2={row.team_color2} />

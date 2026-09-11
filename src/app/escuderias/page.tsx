@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getDrivers, getTeams } from "@/lib/data";
 import { getDict } from "@/lib/i18n-server";
 import { PageHero, Panel, EmptyState } from "@/components/ui";
@@ -34,11 +35,13 @@ export default async function EscuderiasPage() {
                 <ul className="mt-3 space-y-1 text-sm">
                   {roster.length === 0 && <li className="text-muted">—</li>}
                   {roster.map((dr) => (
-                    <li key={dr.id} className="flex items-center justify-between">
-                      <span>
-                        {flagEmoji(dr.country_code)} {dr.name}
-                      </span>
-                      <span className="text-muted">{dr.number != null ? `#${dr.number}` : ""}</span>
+                    <li key={dr.id}>
+                      <Link href={`/pilotos/${dr.id}`} className="flex items-center justify-between hover:text-primary">
+                        <span>
+                          {flagEmoji(dr.country_code)} {dr.name}
+                        </span>
+                        <span className="text-muted">{dr.number != null ? `#${dr.number}` : ""}</span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
