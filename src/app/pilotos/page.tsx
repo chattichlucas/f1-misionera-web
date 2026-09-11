@@ -52,12 +52,14 @@ export default async function PilotosPage({
         )}
         {filtered.map((dr) => {
           const team = dr.team_id ? teamById.get(dr.team_id) : undefined;
+          const c1 = team?.color ?? "var(--primary)";
+          const c2 = team?.color2 ?? "var(--accent)";
           return (
             <Link key={dr.id} href={`/pilotos/${dr.id}`}>
               <Panel className="h-full p-5 transition hover:border-primary">
                 <div
-                  className="h-1 w-12 rounded-full"
-                  style={{ background: team?.color ?? "var(--primary)" }}
+                  className="h-1.5 w-16 rounded-full"
+                  style={{ background: `linear-gradient(90deg, ${c1}, ${c2})` }}
                 />
                 <div className="mt-3 flex items-baseline justify-between">
                   <p className="text-lg font-extrabold">
