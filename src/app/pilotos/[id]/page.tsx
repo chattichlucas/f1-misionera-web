@@ -89,7 +89,7 @@ export default async function DriverPage({
         >
           {driver.number != null && (
             <span
-              className="pointer-events-none absolute -right-3 -top-8 select-none text-[180px] font-black leading-none sm:text-[220px]"
+              className="pointer-events-none absolute right-4 top-4 select-none text-[150px] font-black leading-none sm:right-6 sm:top-6 sm:text-[190px]"
               style={{ color: teamColor, opacity: 0.14 }}
             >
               {driver.number}
