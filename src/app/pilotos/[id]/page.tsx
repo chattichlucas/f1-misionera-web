@@ -63,8 +63,9 @@ export default async function DriverPage({
   const raceResults = results.filter((r) => r.session_type === "race");
   const form = raceResults.slice(0, 5).reverse();
 
+  // con escudería: sus 2 colores. sin escudería: los 2 colores base del sitio.
   const teamColor = team?.color ?? "var(--primary)";
-  const teamColor2 = team?.color2 ?? "var(--panel-2)";
+  const teamColor2 = team?.color2 ?? "var(--accent)";
 
   const stat = (label: string, value: React.ReactNode) => (
     <div
